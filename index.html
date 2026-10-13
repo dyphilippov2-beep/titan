@@ -1,0 +1,1153 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#130827">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Титан">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="apple-touch-icon.png">
+<style>html,body{margin:0;padding:0}[hidden]{display:none!important}</style>
+<script>window.TITAN_LOGIN=true;</script>
+</head><body>
+<title>Титан</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@1,800;1,900&family=Russo+One&family=Golos+Text:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: phone app shell — ice-white rink surface, navy boards, red goal-line accent; sticky header, bottom tab bar */
+/* Brand look (single dark theme): arena-night violet, logo yellow, jersey black, ice white */
+:root{
+  --bg:#130827; --surface:#1e1040; --ink:#ffffff; --muted:#b8a6e0; --line:#35206b;
+  --navy:#6d36d9; --navy-ink:#ffffff; --red:#f5c71a; --blue:#c9a8ff; --soft:#2a1858;
+  --gold:#f5c71a; --gold-ink:#111111; --black:#0d0d10; --alarm:#ff4f6e;
+  --ok:#5fe0a0; --ok-bg:#123a2c; --warn:#ffcf5a; --warn-bg:#3b2d10; --bad-bg:#4a1530;
+  --f-display:"Rubik","Russo One","Arial Black",system-ui,sans-serif;
+  --f-body:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.app{max-width:480px;margin:0 auto;min-height:100%;padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;color:#fff;padding:12px 16px 14px;display:flex;flex-direction:column;gap:10px;overflow:hidden;border-bottom:3px solid var(--gold);
+ background:linear-gradient(115deg,transparent 0 74%,rgba(245,199,26,.9) 74% 76.5%,transparent 76.5% 79%,rgba(255,255,255,.85) 79% 80%,transparent 80%),radial-gradient(120% 140% at 85% 0%,#7a3df0 0%,#3a1784 45%,#170a33 100%)}
+header.top::after{content:"";position:absolute;right:-30px;bottom:-60px;width:180px;height:110px;background:repeating-linear-gradient(115deg,rgba(245,199,26,.35) 0 4px,transparent 4px 14px);transform:rotate(-8deg)}
+.brand{display:flex;align-items:center;gap:10px;position:relative;z-index:1}
+.mark{width:60px;height:60px;border-radius:50%;flex:none;filter:drop-shadow(0 3px 8px rgba(0,0,0,.5))}
+.brand b{font-family:var(--f-display);font-style:italic;font-weight:900;font-size:24px;letter-spacing:.02em;display:block;line-height:1;text-shadow:2px 2px 0 #000}
+.brand small{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.who{display:flex;gap:8px;align-items:center;flex-wrap:wrap;position:relative;z-index:1}
+.who select{background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:6px 8px;font-size:13px}
+.who select option{color:#000;background:#fff}
+.who .scope{font-size:12px;opacity:.85}
+
+main{padding:16px;display:flex;flex-direction:column;gap:14px}
+h2{font-family:var(--f-display);font-style:italic;font-weight:900;font-size:22px;text-transform:uppercase;margin:4px 0 0;letter-spacing:.01em;text-wrap:balance;text-shadow:2px 2px 0 var(--navy)}
+h3{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:6px 0 -4px;font-weight:600}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.row{display:flex;gap:10px;align-items:center;min-width:0}
+.row>.grow{flex:1;min-width:0}
+.muted{color:var(--muted);font-size:13px}
+.num{font-variant-numeric:tabular-nums}
+.list{display:flex;flex-direction:column}
+.list>.item{display:flex;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line);min-width:0}
+.list>.item:first-child{border-top:0;padding-top:2px}
+.item .grow{flex:1;min-width:0}
+.item .t{font-weight:600}
+.btn{border:0;border-radius:10px;padding:10px 14px;background:var(--navy);color:var(--navy-ink);font-weight:600;font-size:14px}
+.btn.red{background:var(--gold);color:var(--gold-ink);text-transform:uppercase;letter-spacing:.03em;font-weight:800}
+.btn.ghost{background:var(--soft);color:var(--ink)}
+.btn.sm{padding:7px 11px;font-size:13px}
+.btn.block{width:100%}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:3px 8px;border-radius:999px;background:var(--soft);color:var(--ink);white-space:nowrap}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.bad{background:var(--bad-bg);color:var(--alarm)}
+.pill.ice{background:var(--soft);color:var(--blue)}
+
+.kid{display:flex;gap:14px;align-items:center}
+.jersey{width:58px;height:64px;color:#fff;flex:none;background:var(--black);border:1px solid #2b2b33;font-style:italic;color:#fff;border-radius:12px 12px 16px 16px;display:grid;place-items:center;font-family:var(--f-display);font-size:26px;position:relative}
+.jersey::before{content:"";position:absolute;left:0;right:0;top:40px;height:9px;background:linear-gradient(var(--gold) 0 3px,#fff 3px 6px,var(--gold) 6px)}
+.kid .name{font-weight:700;font-size:17px;line-height:1.2}
+
+.debt{border-left:5px solid var(--alarm)}
+.debt.clear{border-left-color:var(--ok)}
+.big{font-family:var(--f-display);font-style:italic;font-weight:900;font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+
+.hscroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scroll-snap-type:x mandatory;margin-inline:-16px;padding-inline:16px}
+.promo{flex:0 0 78%;scroll-snap-align:start;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px;position:relative;overflow:hidden}
+.promo::after{content:"";position:absolute;right:-30px;bottom:-20px;width:120px;height:60px;background:repeating-linear-gradient(115deg,rgba(245,199,26,.4) 0 3px,transparent 3px 11px);transform:rotate(-8deg)}
+
+.seg{display:flex;background:var(--soft);border-radius:10px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:transparent;border-radius:8px;padding:8px 4px;font-size:13px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--gold);color:var(--gold-ink);box-shadow:0 1px 2px rgba(0,0,0,.3)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600}
+.chip[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+
+.day{display:flex;gap:12px}
+.day .date{flex:none;width:44px;text-align:center;padding-top:2px}
+.day .date b{display:block;font-family:var(--f-display);font-style:italic;font-size:20px;font-weight:900}
+.day .date span{font-size:12px;color:var(--muted)}
+.day.today .date b{color:var(--gold)}
+.day .ev{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0}
+.ev-i{display:flex;gap:10px;align-items:center;padding:9px 10px;border-radius:10px;background:var(--soft);min-width:0}
+.ev-i .time{font-weight:700;font-variant-numeric:tabular-nums;font-size:14px;white-space:nowrap}
+.ev-i .grow{flex:1;min-width:0}
+
+.att{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px}
+.att div{border-radius:8px;padding:6px 4px;text-align:center;font-size:12px;font-variant-numeric:tabular-nums;background:var(--soft)}
+.att div b{display:block;font-size:14px}
+.att .p{background:var(--ok-bg);color:var(--ok)}
+.att .m{background:var(--bad-bg);color:var(--alarm)}
+.att .s{background:var(--warn-bg);color:var(--warn)}
+.markbtn{min-width:44px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 8px;font-weight:700}
+.markbtn.p{background:var(--ok-bg);color:var(--ok);border-color:transparent}
+.markbtn.m{background:var(--bad-bg);color:var(--alarm);border-color:transparent}
+.markbtn.s{background:var(--warn-bg);color:var(--warn);border-color:transparent}
+
+.thumb{aspect-ratio:16/9;max-width:100%;border-radius:10px;position:relative;overflow:hidden;background:radial-gradient(90% 120% at 70% 20%,#6d36d9,#22104d 70%);display:grid;place-items:center}
+.thumb::before{content:"";position:absolute;left:-10%;right:-10%;top:58%;height:14px;background:linear-gradient(var(--gold) 0 5px,transparent 5px 8px,#fff 8px);transform:rotate(-12deg);opacity:.75}
+.thumb::after{content:"";position:absolute;width:46%;aspect-ratio:1;border:3px solid #fff;border-radius:50%;opacity:.15}
+.play{width:52px;height:52px;border-radius:50%;background:var(--gold);display:grid;place-items:center;z-index:1}
+.play::before{content:"";border-left:15px solid #111;border-top:9px solid transparent;border-bottom:9px solid transparent;margin-left:4px}
+.thumb .dur{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.75);color:#fff;font-size:12px;padding:2px 6px;border-radius:6px;z-index:1}
+.thumb .cat{position:absolute;left:8px;top:8px;z-index:1}
+video{width:100%;border-radius:10px;background:#000}
+ol.tips,ul.tips{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px}
+
+.bubbles{display:flex;flex-direction:column;gap:8px}
+.bub{max-width:82%;padding:9px 12px;border-radius:14px;background:var(--surface);border:1px solid var(--line);align-self:flex-start;overflow-wrap:anywhere}
+.bub.me{align-self:flex-end;background:var(--navy);color:var(--navy-ink);border-color:var(--navy)}
+.bub small{display:block;font-size:11px;opacity:.65;margin-top:3px}
+.composer{position:sticky;bottom:calc(76px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;background:var(--bg);padding-block:8px}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+input[type=text],input[type=number],input[type=tel],select.in,textarea{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;font-size:15px;color:var(--ink)}
+textarea{min-height:80px;resize:vertical}
+.composer input{flex:1;min-width:0}
+.badge{min-width:20px;height:20px;border-radius:10px;background:var(--alarm);color:#fff;font-size:12px;font-weight:700;display:inline-grid;place-items:center;padding:0 6px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:14px}
+.kv dt{color:var(--muted)}.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.doc{width:34px;height:40px;border-radius:6px;background:var(--soft);display:grid;place-items:center;font-size:10px;font-weight:700;color:var(--blue);flex:none}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(90px + env(safe-area-inset-bottom,0px));background:var(--gold);color:var(--gold-ink);font-weight:600;padding:10px 16px;border-radius:10px;font-size:14px;z-index:20;max-width:90%}
+.back{border:0;background:none;color:var(--blue);font-weight:600;padding:0;align-self:flex-start}
+.note{font-size:12px;color:var(--muted);background:var(--soft);border-radius:10px;padding:8px 10px}
+
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--black);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabs .in{max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+nav.tabs button{border:0;background:none;padding:8px 2px 9px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--muted);position:relative}
+nav.tabs button[aria-current="page"]{color:var(--gold)}
+nav.tabs svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav.tabs .badge{position:absolute;top:4px;left:calc(50% + 6px);min-width:16px;height:16px;font-size:10px;padding:0 4px}
+@media (prefers-reduced-motion:no-preference){.card,.promo{animation:in .18s ease-out}@keyframes in{from{transform:translateY(4px)}}}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand"><img class="mark" alt="Лаборатория хоккея «Титан»" src="data:image/webp;base64,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"><div><b>ТИТАН</b><small>лаборатория хоккея</small></div></div>
+    <div class="who">
+      <select id="role" aria-label="Войти как">
+        <option value="parent">Родитель</option>
+        <option value="coach">Тренер</option>
+        <option value="admin">Администратор</option>
+        <option value="director">Руководитель школы</option>
+      </select>
+      <span class="scope" id="scope"></span>
+    </div>
+  </header>
+  <main id="main"></main>
+</div>
+<nav class="tabs"><div class="in" id="nav"></div></nav>
+
+<style>
+.bell{margin-left:auto;position:relative;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.35);color:#fff;border-radius:10px;width:38px;height:34px;display:grid;place-items:center;flex:none}
+.bell svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.bell .badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;font-size:11px;padding:0 5px}
+.who select{max-width:100%;min-width:0}
+#ident{flex:1 1 160px}
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:30;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:480px;border-radius:18px 18px 0 0;border-top:3px solid var(--gold);padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px;max-height:88vh;overflow:auto}
+.sheet img.view{width:100%;border-radius:10px;background:#000}
+.bar{height:8px;background:var(--soft);border-radius:4px;overflow:hidden;flex:1;min-width:60px}
+.bar i{display:block;height:100%;background:var(--gold);border-radius:4px}
+.alert{border-left:5px solid var(--warn)}
+.tour{border:1px solid var(--gold);background:linear-gradient(135deg,rgba(245,199,26,.12),transparent 60%),var(--surface)}
+.prog{display:grid;grid-template-columns:1fr auto auto;gap:4px 10px;align-items:center;font-size:14px}
+.prog .h{font-size:12px;color:var(--muted)}
+.cmt{background:var(--soft);border-radius:10px;padding:10px 12px;font-size:14px}
+.cmt small{display:block;color:var(--muted);margin-top:4px}
+.n-item.unread .t::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gold);margin-right:6px;vertical-align:middle}
+.form{display:flex;flex-direction:column;gap:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid2>*{min-width:0}
+input[type=date],input[type=time],input[type=url],input[type=email],input[type=file]{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 10px;font-size:15px;color:var(--ink);min-width:0}
+input[type=file]{padding:8px;font-size:13px}
+.cedit{display:flex;flex-direction:column;gap:6px;padding:10px;border:1px solid var(--line);border-radius:12px}
+.savebar{position:sticky;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:4;background:var(--gold);color:var(--gold-ink);border-radius:14px;padding:10px 12px;display:flex;gap:10px;align-items:center;box-shadow:0 6px 20px rgba(0,0,0,.45)}
+.savebar .btn{background:var(--black);color:#fff}
+.sel{outline:2px solid var(--gold);outline-offset:-2px}
+.who-lbl{display:block;font-size:11px;font-weight:700;opacity:.8;margin-bottom:2px}
+.ro{font-size:12px;color:var(--muted);text-align:center}
+.linkbtn{display:inline-block;text-decoration:none;text-align:center}
+.chk{display:flex;gap:6px;flex-wrap:wrap}
+.chk label{display:flex;gap:5px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:13px}
+.danger{color:var(--alarm)}
+.toast{pointer-events:none}
+.btn.warnb{background:var(--bad-bg);color:var(--alarm)}
+</style>
+<script>
+/* ===================== ВРЕМЯ ===================== */
+const DOW=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+const DOWFULL=['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];
+const MON_GEN=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const pad=n=>String(n).padStart(2,'0');
+const fmt=d=>pad(d.getDate())+'.'+pad(d.getMonth()+1);
+const TODAY_D=(()=>{const d=new Date();d.setHours(0,0,0,0);return d})();
+const TODAY=fmt(TODAY_D);
+const TIDX=(TODAY_D.getDay()+6)%7;
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const MONDAY=addDays(TODAY_D,-TIDX);
+const WEEK=DOW.map((w,i)=>[w,fmt(addDays(MONDAY,i))]);
+const now=()=>TODAY+' '+new Date().toTimeString().slice(0,5);
+const pd=s=>{const [d,m,y]=String(s).split('.').map(Number);return new Date(y,m-1,d)};
+const daysLeft=s=>Math.round((pd(s)-TODAY_D)/864e5);
+const toISO=s=>{if(!s)return '';const [d,m,y]=s.split('.');return y&&m&&d?`${y}-${m}-${d}`:''};
+const fromISO=s=>{if(!s)return '';const [y,m,d]=s.split('-');return `${d}.${m}.${y}`};
+const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+
+/* ===================== СПРАВОЧНИКИ ===================== */
+const TYPES={ice:'Лёд',ofp:'ОФП',game:'Игра',mass:'Массовое катание'};
+const PLACE={ice:'Лёд',ofp:'ОФП',game:'Лёд',mass:'Лёд'};
+const POS=['Нападающий','Защитник','Вратарь'];
+const KINDS=['Полевой игрок','Вратарская','Катание и техника','Бросок'];
+const MAX_COACHES=9;
+const ROLE_LBL={parent:'Родитель',coach:'Тренер',admin:'Администратор',director:'Руководитель',owner:'Собственник'};
+const CH_LBL={coach:'Тренер',admin:'Администратор',director:'Руководитель школы'};
+const PAYEE_FIELDS=[['recipient','Получатель'],['inn','ИНН'],['kpp','КПП'],['ogrn','ОГРН'],['account','Расчётный счёт'],['bank','Банк'],['bik','БИК'],['corr','Корр. счёт'],['bankInn','ИНН банка'],['bankKpp','КПП банка'],['sbp','Телефон для СБП'],['purpose','Назначение платежа']];
+/* стоимость секции в месяц по группам, ₽ */
+const GROUP_PRICE={'2017':12000,'2018–2019':12000,'2020':12000,'2021':9000,'Новый набор':7800,'Группа здоровья':6800};
+const groupPrice=g=>GROUP_PRICE[g]||0;
+/* индивидуальные: цена с человека по числу участников (индекс = число мест) */
+const IND_SEC=[0,2500,2200,2000,1700,1500,1300];
+const IND_EXT=[0,3000,2800,2500,2200,2000,1500];
+const indPrice=n=>IND_SEC[Math.min(Math.max(+n||1,1),6)];
+/* прочие услуги; pay — получатель платежа */
+const SERVICES=[
+  {n:'Заточка: профилирование',p:900,pay:'ooo'},
+  {n:'Заточка: жёлоб',p:500,pay:'ooo'},
+  {n:'Сушка: маленькая ячейка, месяц',p:3500,pay:'ooo'},
+  {n:'Сушка: большая ячейка, месяц',p:5500,pay:'ooo'},
+  {n:'Бросковая зона, с человека',p:1000,pay:'ano'},
+];
+const MON_NOM=['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+const DUE_DAY=10;
+
+/* ===================== ДЕМО-ДАННЫЕ ===================== */
+const PAST=['01.10','03.10','05.10','06.10','07.10','09.10','10.10'];
+function genAtt(seed){return PAST.map((d,i)=>({d,s:((seed*7+i*3)%9===0)?'-':((seed+i)%11===0?'б':'+')}))}
+let kseq=1;
+const ab=g=>({d:'01.10',t:'Абонемент, октябрь',s:groupPrice(g),pay:'ano'});
+function K(name,g,num,pos,mom,momPh,dad,dadPh,owes,spr,ins){const id='k'+(kseq++);const items=owes?[ab(g)]:[];
+  return {id,name,g,num,pos,debt:items.reduce((a,i)=>a+i.s,0),parents:[{r:'Мама',n:mom,p:momPh}].concat(dad?[{r:'Папа',n:dad,p:dadPh}]:[]),
+    rel:[],items,pays:[],att:genAtt(kseq),
+    docs:[{n:'Договор на оказание услуг.pdf',by:'Администратор',d:'01.09',fid:null}],
+    med:{spr:spr||'31.05.2027',ins:ins||'31.08.2027',insFile:null,insName:null},
+    sizes:{skates:'',stick:'',helmet:'',jersey:''},cmts:[]}}
+let KIDS=[
+  K('Смирнов Матвей Ильич','2017',17,'Нападающий','Смирнова Ирина Александровна','+7 912 345-67-89','Смирнов Илья Сергеевич','+7 922 111-22-33',1,'31.12.2026','05.11.2026'),
+  K('Орлов Даниил Романович','2017',4,'Защитник','Орлова Анна Викторовна','+7 902 410-55-21','Орлов Роман Игоревич','+7 912 200-31-08',0),
+  K('Ким Артём Олегович','2017',30,'Вратарь','Ким Елена Сергеевна','+7 950 633-18-40','Ким Олег Вячеславович','+7 950 633-18-41',1,'20.10.2026'),
+  K('Фёдоров Лев Андреевич','2017',91,'Нападающий','Фёдорова Мария Олеговна','+7 912 777-03-12','','',0),
+  K('Белов Марк Денисович','2017',22,'Защитник','Белова Ольга Ивановна','+7 922 508-90-14','Белов Денис Петрович','+7 922 508-90-15',1),
+  K('Новиков Егор Максимович','2017',8,'Нападающий','Новикова Дарья Андреевна','+7 904 155-26-77','Новиков Максим Ильич','+7 904 155-26-78',0),
+  K('Попов Тимофей Ильич','2018–2019',11,'Нападающий','Попова Светлана Юрьевна','+7 912 411-00-23','Попов Илья Андреевич','+7 912 411-00-24',1),
+  K('Захаров Никита Сергеевич','2018–2019',3,'Защитник','Захарова Юлия Петровна','+7 922 140-62-90','','',0,'','01.11.2026'),
+  K('Волков Иван Дмитриевич','2018–2019',35,'Вратарь','Волкова Наталья Игоревна','+7 950 288-41-17','Волков Дмитрий Олегович','+7 950 288-41-18',0),
+  K('Соколов Арсений Павлович','2020',19,'Нападающий','Соколова Татьяна Ильинична','+7 912 905-77-30','Соколов Павел Андреевич','+7 912 905-77-31',1),
+  K('Морозов Глеб Артёмович','2020',6,'Защитник','Морозова Ксения Олеговна','+7 922 330-11-45','','',0),
+  K('Лебедев Кирилл Иванович','2021',88,'Нападающий','Лебедева Алла Викторовна','+7 902 870-14-52','Лебедев Иван Сергеевич','+7 902 870-14-53',0),
+  K('Козлов Савелий Романович','Новый набор',2,'Нападающий','Козлова Ирина Павловна','+7 912 616-48-02','Козлов Роман Евгеньевич','+7 912 616-48-03',1),
+  K('Гусев Роман Алексеевич','2021',14,'Защитник','Гусева Елена Павловна','+7 912 300-40-50','Гусев Алексей Романович','+7 912 300-40-51',1),
+  K('Титов Платон Ильич','Новый набор',5,'Нападающий','Титова Мария Сергеевна','+7 922 700-11-90','','',0),
+];
+(function(){const k=KIDS[0];k.rel=[{r:'Бабушка',n:'Смирнова Галина Петровна',p:'+7 912 600-14-05'}];
+  k.att=[{d:'01.10',s:'+'},{d:'03.10',s:'+'},{d:'05.10',s:'+'},{d:'06.10',s:'б'},{d:'07.10',s:'+'},{d:'09.10',s:'-'},{d:'10.10',s:'+'}];
+  k.pays=[{d:'08.09',t:'Абонемент, сентябрь',s:12000,rc:'0041',pay:'ano'}];
+  k.docs=[{n:'Договор на оказание услуг №145.pdf',by:'Администратор',d:'01.09',fid:null}];
+  k.sizes={skates:'Bauer 3.5 D',stick:'Junior, флекс 40, левый хват, 127 см',helmet:'S',jersey:'YL (140)'};
+  k.cmts=[{d:'09.10',by:'Горшков Н.Л.',t:'Хорошо прибавил в броске. Работаем над обводкой: держит шайбу далеко от себя, теряет на смене направления.',url:''}];
+  const s=KIDS[9];s.items.push({d:'01.10',t:'Сушка: маленькая ячейка, октябрь',s:3500,pay:'ooo'});s.debt+=3500})();
+let eseq=1;const E=(g,d,s,e,type)=>({id:'e'+(eseq++),g,d,s,e,type:type||'ice',place:PLACE[type||'ice']});
+/* реальное расписание школы */
+let EVENTS=[
+  E('Новый набор',0,'19:00','20:00'),E('Новый набор',2,'19:00','20:00'),E('Новый набор',4,'19:00','20:00'),
+  E('2020',1,'19:00','20:00'),E('2020',3,'19:00','20:00'),E('2020',5,'10:15','11:15'),E('2020',6,'10:15','11:15'),
+  E('2018–2019',0,'20:15','21:15'),E('2018–2019',1,'19:00','20:00'),E('2018–2019',3,'20:15','21:15'),E('2018–2019',4,'20:15','21:15'),
+  E('2017',2,'20:15','21:15'),E('2017',3,'20:15','21:15'),E('2017',4,'20:15','21:15'),E('2017',6,'09:00','10:00'),
+  E('Группа здоровья',1,'09:00','10:00'),E('Группа здоровья',1,'17:45','18:45'),E('Группа здоровья',3,'09:00','10:00'),E('Группа здоровья',3,'17:45','18:45'),
+  E('2021',0,'19:00','20:00'),E('2021',2,'19:00','20:00'),E('2021',4,'19:00','20:00'),
+];
+let SLOTS=[
+  {id:'s1',d:1,t:'13:00',c:'c1',k:'Полевой игрок',cap:1,seats:[],wait:[]},
+  {id:'s2',d:1,t:'14:00',c:'c1',k:'Бросок',cap:2,seats:['k2'],wait:[]},
+  {id:'s3',d:2,t:'14:00',c:'c2',k:'Вратарская',cap:1,seats:[],wait:[]},
+  {id:'s4',d:3,t:'13:00',c:'c1',k:'Катание и техника',cap:3,seats:['k4'],wait:[]},
+  {id:'s5',d:3,t:'15:00',c:'c3',k:'Полевой игрок',cap:1,seats:['k10'],wait:['k11']},
+  {id:'s6',d:5,t:'12:00',c:'c2',k:'Полевой игрок',cap:4,seats:['k7','k9'],wait:[]},
+  {id:'s7',d:6,t:'12:00',c:'c5',k:'Катание и техника',cap:2,seats:[],wait:[]},
+  {id:'s8',d:4,t:'14:00',c:'c4',k:'Полевой игрок',cap:1,seats:[],wait:[]},
+];
+let POSTS=[
+  {id:'p1',ts:4,type:'promo',g:'all',title:'Приведи друга',text:'Скидка 50% на месяц абонемента вам и другу, если он запишется до 31 октября.',d:'05.10'},
+  {id:'p2',ts:3,type:'promo',g:'all',title:'Индивидуальные в мини-группе',text:'Чем больше участников, тем дешевле: от 2 500 ₽ за одного до 1 300 ₽ с человека в группе от 6.',d:'01.10'},
+  {id:'p4',ts:5,type:'news',g:'2020',title:'Выездная игра в субботу',text:'Сбор у арены в 8:15, автобус школы.',d:'09.10'},
+];
+let TOURS=[
+  {id:'t1',ts:1,g:'2017',title:'Турнир «Осенний лёд»',dates:'24–25 октября',place:'Сургут, 6 команд',meet:'24.10 в 8:00 у арены',deadline:'17.10',ans:{k2:'yes',k3:'no',k4:'yes',k6:'yes'}},
+  {id:'t2',ts:2,g:'2018–2019',title:'Кубок первых шагов',dates:'7 ноября',place:'Сургут, домашний',meet:'7.11 в 9:00',deadline:'31.10',ans:{k7:'yes'}},
+];
+const BK='Базовые знания',INT='Интересное';
+let VIDEOS=[
+  {id:'v1',ts:1,cat:BK,title:'Как подобрать коньки',g:'all',url:'',tips:['Примеряйте вечером и в том носке, в котором ребёнок тренируется.','В стойке на прямых ногах пальцы слегка касаются подноска, при сгибе коленей отходят.','Пятка не должна подниматься при наклоне вперёд.','Берите не больше чем на полразмера «на вырост»: свободный ботинок ломает технику катания.','Новые коньки нужно заточить и формовать до первой тренировки.']},
+  {id:'v7',ts:1.5,cat:BK,title:'Как завязывать коньки',g:'all',url:'',tips:['Нижние 2–3 пары крючков — умеренно, чтобы не пережать пальцы.','Середина — плотно: здесь фиксируется голеностоп.','Верхние крючки — чуть свободнее, чтобы ребёнок мог согнуть колени.','Проверка: в стойке пятка не ходит, а палец взрослого проходит за язычок сверху.','Концы шнурков убираем, чтобы не наступить и не зацепиться.']},
+  {id:'v2',ts:2,cat:BK,title:'Как подобрать клюшку',g:'all',url:'',tips:['Длина: без коньков носок клюшки на полу, крюк достаёт до кончика носа; на коньках — до подбородка.','Хват (левый или правый) — по нижней руке. Удобнее всего проверить на месте с тренером.','Жёсткость (флекс): ребёнок должен прогибать клюшку при броске. Слишком жёсткая мешает броску.','После обрезки клюшка становится жёстче — учитывайте это при покупке.']},
+  {id:'v3',ts:3,cat:BK,title:'Экипировка: что и в каком порядке надевать',g:'all',url:'',tips:['Компрессионное бельё и раковина.','Щитки, затем гамаши на липучку.','Шорты, коньки.','Нагрудник, налокотники, джерси.','Шлем с маской — застёгнут, между подбородком и ремешком проходит один палец. Перчатки последними.']},
+  {id:'v4',ts:4,cat:BK,title:'Заточка коньков: как часто и зачем',g:'all',url:'',tips:['Точите каждые 10–15 часов льда или когда конёк начинает «проскальзывать» в поворотах.','Тупые канты не дают упора: ребёнок падает и привыкает неправильно ставить ногу.','Проверка: проведите ногтем поперёк канта — острый кант снимает стружку.','После льда вытирайте лезвия насухо и надевайте мягкие чехлы, жёсткие — только для ходьбы.','Профилирование и жёлоб подбираем по весу и уровню ребёнка — спросите у тренера.']},
+  {id:'v5',ts:5,cat:BK,title:'Как сушить форму после тренировки',g:'all',url:'',tips:['Сразу достаньте всё из баула, не оставляйте до утра.','Стельки из коньков вынимайте отдельно.','Не сушите на батарее: пластик деформируется, кожа трескается.','Бельё и джерси стирайте после каждой тренировки. Можно арендовать ячейку в сушилке.']},
+  {id:'v6',ts:6,cat:INT,title:'Почему вратарю нужна отдельная заточка',g:'all',url:'',tips:['У вратарских коньков длиннее и площе лезвие: им важнее устойчивость, чем манёвренность.','Желобок делают мельче, чтобы конёк легче скользил при перемещениях.']},
+];
+let MSGS=[
+  {id:'m1',ts:1,th:'k1:coach',from:'coach',name:'Горшков Никита Львович',t:'Добрый день! В пятницу хорошо отработали. Обратите внимание на заточку: канты подсели.',tm:'09.10 19:40'},
+  {id:'m2',ts:2,th:'k1:coach',from:'parent',name:'Мама',t:'Спасибо! Заточим до среды.',tm:'09.10 20:02'},
+  {id:'m3',ts:3,th:'k1:director',from:'director',name:'Ростовская Александра Владимировна',t:'Добрый день! Турнир 24–25 октября: подтвердите, пожалуйста, участие кнопкой на главном экране до 17.10.',tm:'08.10 12:00'},
+  {id:'m4',ts:4,th:'k3:coach',from:'parent',name:'Ким Елена Сергеевна (мама)',t:'Никита Львович, Артём сегодня пропустит тренировку, у него температура.',tm:'12.10 09:15'},
+  {id:'m5',ts:5,th:'k10:director',from:'parent',name:'Соколова Татьяна Ильинична (мама)',t:'Александра Владимировна, можно ли разбить оплату за октябрь на две части?',tm:'11.10 21:40'},
+  {id:'m6',ts:6,th:'k5:admin',from:'parent',name:'Белова Ольга Ивановна (мама)',t:'Здравствуйте! Пришлите, пожалуйста, договор ещё раз.',tm:'12.10 10:05'},
+];
+let NOTIFS=[
+  {id:'n1',ts:1,aud:'parent',kid:'k1',t:'Начислен абонемент за октябрь: 12 000 ₽. Оплатить до 10 октября',d:'01.10 10:00'},
+  {id:'n2',ts:2,aud:'parent',g:'2017',t:'Новый турнир для группы 2017: «Осенний лёд», 24–25 октября',d:'08.10 12:00'},
+  {id:'n3',ts:3,aud:'staff',roles:['admin','director'],t:'Медсправка Ким А. заканчивается 20.10',d:'12.10 09:00'},
+];
+let PAYREQ=[];
+let META={
+  groups:{list:['2017','2018–2019','2020','2021','Новый набор','Группа здоровья']},
+  coaches:{list:[
+    {id:'c1',name:'Горшков Никита Львович',phone:'',email:'',groups:['2017']},
+    {id:'c2',name:'Огурцов Кирилл Юрьевич',phone:'',email:'',groups:['2018–2019']},
+    {id:'c3',name:'Ершов Павел Андреевич',phone:'',email:'',groups:['2020']},
+    {id:'c4',name:'Юр Андрей Александрович',phone:'',email:'',groups:['2021']},
+    {id:'c5',name:'Плосков Остап Генадьевич',phone:'',email:'',groups:['Новый набор']},
+    {id:'c6',name:'Белкин Илья Дмитриевич',phone:'',email:'',groups:['Группа здоровья']}]},
+  staff:{admins:['Шаймухаметова Эльвена Алфритовна','Панасенкова Ирина Александровна','Иванова Наталья Ивановна'],director:'Ростовская Александра Владимировна'},
+  payees:{list:[
+    {id:'ano',title:'Секция, индивидуальные, бросковая зона',recipient:'АНО "ЦЕНТР ПОДДЕРЖКИ И РАЗВИТИЯ ХОККЕЯ С ШАЙБОЙ"',inn:'8602998542',kpp:'860201001',ogrn:'1148600000911',account:'40703810767170040793',bank:'ЗАПАДНО-СИБИРСКОЕ ОТДЕЛЕНИЕ №8647 ПАО СБЕРБАНК',bik:'047102651',corr:'30101810800000000651',bankInn:'7707083893',bankKpp:'860202001',sbp:'',purpose:'Оплата за {ФИО ребёнка}'},
+    {id:'ooo',title:'Заточка и сушилка',recipient:'ООО "ПРОДЭКО-РИТЕЙЛ"',inn:'8602195270',kpp:'860201001',ogrn:'',account:'40702810213500005184',bank:'ООО "Банк Точка"',bik:'044525104',corr:'30101810745374525104',bankInn:'',bankKpp:'',sbp:'',purpose:'Оплата за {ФИО ребёнка}'}]},
+  log:{list:[]},
+  cats:{list:[BK,INT]},
+  abs:{map:{['k3|'+TODAY]:'болеет'}},
+  counter:{rc:42},
+};
+let FILESLOCAL={};
+
+/* ===================== СОСТОЯНИЕ ===================== */
+const S={tab:'home',seg:'train',role:'parent',meKid:'k1',pidx:0,coach:'c1',admin:0,payPay:null,sel:[],thread:null,cat:'Все',open:null,group:null,kid:null,
+  draft:null,editSizes:false,editMed:false,sheet:null,absAsk:null,evEdit:null,evDel:null,slEdit:false,slDel:null,vEdit:null,vDel:null,
+  catEdit:false,postType:null,kidDel:null,file:null,payForm:false,toast:'',loading:false,readonly:false};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const rub=n=>(+n||0).toLocaleString('ru-RU')+' ₽';
+const short=n=>{const p=String(n||'').split(' ').filter(Boolean);return p[0]?p[0]+' '+(p[1]?p[1][0]+'.':'')+(p[2]?p[2][0]+'.':''):''};
+const GROUPS=()=>[...META.groups.list];
+const gl=g=>g==='all'?'все группы':/^\d{4}(–\d{4})?$/.test(g)?g+' г.р.':g;
+const COACHES=()=>META.coaches.list;
+const coachById=id=>COACHES().find(c=>c.id===id);
+const coachForGroup=g=>COACHES().find(c=>c.groups.includes(g)&&!c.asst)||COACHES().find(c=>c.groups.includes(g));
+const sumItems=k=>(k.items||[]).reduce((a,i)=>a+(+i.s||0),0);
+const CATS=()=>META.cats.list;
+const ABS=()=>META.abs.map;
+const kidById=id=>KIDS.find(k=>k.id===id);
+let ME=null;
+function fixMe(){ME=kidById(S.meKid)||KIDS[0]||null;if(ME&&ME.id!==S.meKid){S.meKid=ME.id;S.pidx=0}if(ME&&S.pidx>=ME.parents.length)S.pidx=0;
+  if(!coachById(S.coach)&&COACHES()[0])S.coach=COACHES()[0].id}
+const myParent=()=>ME&&ME.parents[S.pidx]||{r:'Родитель',n:'Родитель'};
+const myGroups=()=>S.role==='parent'?(ME?[ME.g]:[]):S.role==='coach'?((coachById(S.coach)||{groups:[]}).groups):GROUPS();
+const visibleGroup=g=>g==='all'||myGroups().includes(g);
+const isStaff=()=>S.role!=='parent';
+const isTop=()=>S.role==='director'||S.role==='owner';
+const canManage=()=>S.role==='admin'||isTop();
+const canMaterials=()=>S.role==='coach'||isTop();
+const ADMINS=()=>META.staff.admins;
+const DIRECTOR=()=>META.staff.director;
+const PAYEES=()=>META.payees.list;
+const payeeById=id=>PAYEES().find(p=>p.id===id)||PAYEES()[0];
+const myName=()=>S.role==='parent'?myParent().n:S.role==='coach'?(coachById(S.coach)||{}).name:S.role==='admin'?(ADMINS()[S.admin]||ADMINS()[0]||'Администратор'):S.role==='owner'?(META.staff.owner||'Собственник'):DIRECTOR();
+const paySums=k=>{const m={};(k.items||[]).forEach(i=>{const p=i.pay||'ano';m[p]=(m[p]||0)+i.s});return m};
+const dueDate=()=>{const d=new Date(TODAY_D.getFullYear(),TODAY_D.getMonth(),DUE_DAY);return fmt(d)};
+const slotDate=s=>{let d=addDays(MONDAY,s.d);const [h,m]=String(s.t).split(':').map(Number);d.setHours(h||0,m||0,0,0);return d};
+const canCancel=s=>slotDate(s)-new Date()>=24*3600e3;
+const seatsLeft=s=>(s.cap||1)-(s.seats||[]).length;
+function addLog(t){if(S.role==='director')return;META.log.list=[{ts:Date.now(),d:now(),who:myName(),role:ROLE_LBL[S.role],t},...(META.log.list||[])].slice(0,100);
+  notify({aud:'staff',roles:['director','owner'],t:`${short(myName())} (${ROLE_LBL[S.role].toLowerCase()}): ${t}`})}
+const identKey=()=>S.role==='parent'?'p:'+S.meKid+':'+S.pidx:S.role==='coach'?'c:'+S.coach:S.role==='admin'?'a:'+S.admin:S.role;
+const toast=m=>S.toast=m;
+const lsGet=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k)||'null');return v??d}catch(e){return d}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const LOGIN=!!window.TITAN_LOGIN;const TEST_PASS='titan';
+(function(){if(!LOGIN)return;const a=lsGet('titan-auth',null);if(a){S.role=a.role;S.meKid=a.kid||'k1';S.pidx=a.pidx||0;S.coach=a.coach||'c1';S.admin=a.admin||0;S.auth=a}})();
+(function(){if(LOGIN)return;const m=lsGet('titan-me-v2',null);if(m){S.role=m.role||'parent';S.meKid=m.kid||'k1';S.pidx=m.pidx||0;S.coach=m.coach||'c1';S.admin=m.admin||0}})();
+const SEEN=lsGet('titan-seen-v2',{});
+const seen=k=>SEEN[identKey()+'|'+k]||0;
+function markSeen(k,ts){SEEN[identKey()+'|'+k]=ts||Date.now();lsSet('titan-seen-v2',SEEN)}
+function saveMe(){lsSet('titan-me-v2',{role:S.role,kid:S.meKid,pidx:S.pidx,coach:S.coach,admin:S.admin})}
+
+/* ===================== ЛОКАЛЬНОЕ ХРАНЕНИЕ (файл без общей базы) ===================== */
+const STORE='titan-demo-v3';
+function saveLocal(){if(DB)return;try{localStorage.setItem(STORE,JSON.stringify({KIDS,EVENTS,SLOTS,POSTS,TOURS,VIDEOS,MSGS,NOTIFS,PAYREQ,META}))}catch(e){}
+  try{localStorage.setItem(STORE+'-files',JSON.stringify(FILESLOCAL))}catch(e){}}
+(function loadLocal(){try{const d=JSON.parse(localStorage.getItem(STORE)||'null');if(d&&d.KIDS){({KIDS,EVENTS,SLOTS,POSTS,TOURS,VIDEOS,MSGS,NOTIFS,PAYREQ}=d);META={...META,...d.META}}
+  FILESLOCAL=JSON.parse(localStorage.getItem(STORE+'-files')||'{}')}catch(e){}})();
+function resetDemo(){try{localStorage.removeItem(STORE);localStorage.removeItem(STORE+'-files')}catch(e){}location.reload()}
+
+/* ===================== ОБЩАЯ БАЗА ===================== */
+let DB=null;const LASTJ={},LASTO={},CHN={},READY=new Set();
+const NS='_v3';
+const COLL={kids:()=>KIDS,events:()=>EVENTS,slots:()=>SLOTS,posts:()=>POSTS,tours:()=>TOURS,videos:()=>VIDEOS,msgs:()=>MSGS,notifs:()=>NOTIFS,payreq:()=>PAYREQ};
+const SETC={kids:v=>KIDS=v,events:v=>EVENTS=v,slots:v=>SLOTS=v,posts:v=>POSTS=v,tours:v=>TOURS=v,videos:v=>VIDEOS=v,msgs:v=>MSGS=v,notifs:v=>NOTIFS=v,payreq:v=>PAYREQ=v};
+const SORT={kids:(a,b)=>String(a.name).localeCompare(String(b.name),'ru'),events:(a,b)=>a.d-b.d||String(a.s).localeCompare(String(b.s)),
+  slots:(a,b)=>a.d-b.d||String(a.t).localeCompare(String(b.t)),posts:(a,b)=>(b.ts||0)-(a.ts||0),tours:(a,b)=>(a.ts||0)-(b.ts||0),
+  videos:(a,b)=>(a.ts||0)-(b.ts||0),msgs:(a,b)=>(a.ts||0)-(b.ts||0),notifs:(a,b)=>(b.ts||0)-(a.ts||0),payreq:(a,b)=>(a.ts||0)-(b.ts||0)};
+const ALLC=[...Object.keys(COLL),'meta'];
+const isObj=v=>v&&typeof v==='object'&&!Array.isArray(v);
+function stable(v){if(Array.isArray(v))return '['+v.map(stable).join(',')+']';if(isObj(v))return '{'+Object.keys(v).filter(k=>v[k]!==undefined).sort().map(k=>JSON.stringify(k)+':'+stable(v[k])).join(',')+'}';return JSON.stringify(v===undefined?null:v)}
+function diff(a,b){const out={};let any=false;new Set([...Object.keys(a||{}),...Object.keys(b||{})]).forEach(k=>{
+  const x=a?a[k]:undefined,y=b?b[k]:undefined;if(stable(x)===stable(y))return;
+  if(isObj(x)&&isObj(y)){const d=diff(x,y);if(d){out[k]=d;any=true}}else{out[k]=y===undefined?null:y;any=true}});return any?out:null}
+function entities(){const m={};for(const c in COLL)COLL[c]().forEach(x=>m[c+NS+'/'+x.id]=x);for(const k in META)m['meta'+NS+'/'+k]=META[k];return m}
+function onWriteErr(e){
+  if(e&&e.code==='invalid_argument'){if(!S.readonly){S.readonly=true;toast('Изменения не сохраняются: у вас доступ только для просмотра. Попросите владельца пригласить вас с правом редактирования');render()}}
+  else if(e&&e.code==='quota_exceeded'){toast('Общая база заполнена, изменение не сохранилось');render()}
+  else if(e&&e.code==='resource_exhausted'){toast('Слишком много изменений подряд. Подождите пару секунд');render()}}
+function queue(p,fn){CHN[p]=(CHN[p]||Promise.resolve()).then(fn).catch(onWriteErr)}
+function syncOut(){if(!DB||S.loading)return;const m=entities();
+  for(const p in m){const j=stable(m[p]);if(LASTJ[p]===j)continue;const body=JSON.parse(j),prev=LASTO[p];LASTJ[p]=j;LASTO[p]=body;
+    if(prev){const d=diff(prev,body);if(!d)continue;queue(p,()=>DB.doc(p).update(d).catch(e=>{if(e&&e.code==='invalid_argument')return DB.doc(p).set(body);throw e}))}
+    else queue(p,()=>DB.doc(p).set(body))}
+  for(const p in LASTJ)if(!(p in m)){delete LASTJ[p];delete LASTO[p];queue(p,()=>DB.doc(p).delete())}}
+function applySnap(c,snap){
+  const docs=snap.docs.filter(d=>d.exists).map(d=>[c+NS+'/'+d.id,JSON.parse(JSON.stringify(d.data()))]);
+  if(c==='meta'){docs.forEach(([p,v])=>{META[p.split('/')[1]]=v;LASTJ[p]=stable(v);LASTO[p]=JSON.parse(LASTJ[p])})}
+  else{Object.keys(LASTJ).forEach(p=>{if(p.startsWith(c+NS+'/')){delete LASTJ[p];delete LASTO[p]}});
+    docs.forEach(([p,v])=>{LASTJ[p]=stable(v);LASTO[p]=JSON.parse(LASTJ[p])});SETC[c](docs.map(([,v])=>v).sort(SORT[c]))}
+  READY.add(c);if(READY.size===ALLC.length&&S.loading){S.loading=false;fixMe();render();syncOut();return}
+  if(!S.loading){fixMe();renderKeep()}}
+function renderKeep(){
+  const a=document.activeElement,fid=a&&a.id,vals={};
+  document.querySelectorAll('#main input[id],#main textarea[id],#main select[id],.sheet input[id],.sheet textarea[id]').forEach(e=>{if(e.type!=='file'&&e.type!=='checkbox')vals[e.id]=e.value});
+  const y=window.scrollY;render();
+  for(const k in vals){const e=document.getElementById(k);if(e&&e.type!=='file')e.value=vals[k]}
+  if(fid){const e=document.getElementById(fid);if(e&&e!==document.body)e.focus()}window.scrollTo(0,y)}
+
+/* ===================== ФАЙЛЫ ===================== */
+async function readUpload(file){
+  if(file.type.startsWith('image/')){
+    const url=URL.createObjectURL(file);const img=new Image();
+    await new Promise((ok,bad)=>{img.onload=ok;img.onerror=()=>bad('Не получилось открыть картинку');img.src=url});
+    let w=img.naturalWidth,h=img.naturalHeight;const max=1600;if(Math.max(w,h)>max){const r=max/Math.max(w,h);w=Math.round(w*r);h=Math.round(h*r)}
+    const cv=document.createElement('canvas');let data='';
+    for(let scale=1;scale>.3;scale-=.15){cv.width=Math.round(w*scale);cv.height=Math.round(h*scale);const cx=cv.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,cv.width,cv.height);cx.drawImage(img,0,0,cv.width,cv.height);
+      for(let q=.82;q>=.45;q-=.12){data=cv.toDataURL('image/jpeg',q);if(data.length<230000)break}if(data.length<230000)break}
+    URL.revokeObjectURL(url);if(data.length>=230000)throw 'Картинка слишком большая даже после сжатия';
+    return {name:file.name.replace(/\.[^.]+$/,'')+'.jpg',type:'image/jpeg',data}}
+  if(file.size>170000)throw 'Файл больше 170 КБ. Сфотографируйте документ или сохраните его как картинку — фото сожмётся автоматически.';
+  const data=await new Promise((ok,bad)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=()=>bad('Не получилось прочитать файл');r.readAsDataURL(file)});
+  return {name:file.name,type:file.type||'application/octet-stream',data}}
+async function putFile(f,kid){const id=uid('f');const doc={id,name:f.name,type:f.type,data:f.data,by:myName(),d:TODAY,kid:kid||null};
+  if(DB)await DB.doc('files'+NS+'/'+id).set(doc);else{FILESLOCAL[id]=doc;saveLocal()}return id}
+async function getFile(id){if(DB){const s=await DB.doc('files'+NS+'/'+id).get();return s.exists?s.data():null}return FILESLOCAL[id]||null}
+async function openFile(id){S.sheet='file';S.file={id,loading:true};render();
+  try{const f=await getFile(id);S.file=f?{id,name:f.name,type:f.type,data:f.data}:{id,missing:true}}catch(e){S.file={id,missing:true}}render()}
+function dataToBlobUrl(data){try{const [h,b]=data.split(',');const mime=h.split(':')[1].split(';')[0];const bin=atob(b);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return URL.createObjectURL(new Blob([u],{type:mime}))}catch(e){return data}}
+
+/* ===================== УВЕДОМЛЕНИЯ ===================== */
+function notify(n){NOTIFS.unshift({id:uid('n'),ts:Date.now(),d:now(),...n});
+  if(NOTIFS.length>80)NOTIFS.splice(80)}
+function myNotifs(){return NOTIFS.filter(n=>{
+  if(S.role==='parent')return n.aud==='parent'&&ME&&(!n.kid||n.kid===ME.id)&&(!n.g||n.g==='all'||n.g===ME.g);
+  return n.aud==='staff'&&(!n.roles||n.roles.includes(S.role)||S.role==='owner')&&(!n.g||n.g==='all'||visibleGroup(n.g))&&(!n.coach||S.role!=='coach'||n.coach===S.coach)})}
+const unreadNotifs=()=>myNotifs().filter(n=>(n.ts||0)>seen('notif')).length;
+
+/* ===================== ЧАТЫ ===================== */
+function threadsFor(){
+  if(S.role==='parent'){if(!ME)return [];const c=coachForGroup(ME.g);
+    return [[ME.id+':coach','Тренер',c?c.name:'Тренер группы'],[ME.id+':admin','Администратор',ADMINS().map(short).join(', ')],[ME.id+':director','Руководитель школы',DIRECTOR()]]}
+  const chans=S.role==='coach'?['coach']:S.role==='admin'?['admin']:['director','coach','admin'];
+  const keys=new Set(MSGS.map(m=>m.th));if(S.thread)keys.add(S.thread);
+  return [...keys].filter(th=>{const [kid,ch]=th.split(':');const k=kidById(kid);return k&&visibleGroup(k.g)&&chans.includes(ch)})
+    .map(th=>{const [kid,ch]=th.split(':');const k=kidById(kid);return [th,'Семья: '+short(k.name),gl(k.g)+' · чат с '+(ch==='coach'?'тренером':ch==='admin'?'администратором':'руководителем')]})
+    .sort((a,b)=>lastTs(b[0])-lastTs(a[0]))}
+const lastTs=th=>{const m=MSGS.filter(x=>x.th===th);return m.length?m[m.length-1].ts:0};
+const canWrite=th=>{if(S.role==='parent'||S.role==='owner')return true;const ch=th.split(':')[1];return ch===(S.role==='director'?'director':S.role)};
+const isMine=m=>S.role==='parent'?(m.from==='parent'&&(m.name===parentLabel()||m.name===myParent().r)):m.from===S.role;
+const parentLabel=()=>{const p=myParent();return p.n+' ('+String(p.r).toLowerCase()+')'};
+function unreadIn(th){if(!canWrite(th))return 0;const s=seen('th:'+th);return MSGS.filter(m=>m.th===th&&m.ts>s&&!isMine(m)&&(S.role==='parent'?m.from!=='parent':m.from==='parent')).length}
+const unreadChats=()=>threadsFor().reduce((a,[th])=>a+unreadIn(th),0);
+
+/* ===================== РАМКА ===================== */
+const IC={home:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>',sched:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  chat:'<path d="M4 5h16v11H9l-5 4z"/>',media:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/>',
+  profile:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
+  groups:'<circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M2 20c1-3 3.5-5 6-5s5 2 6 5M14 15.5c1-.4 1.6-.5 2-.5 2.5 0 5 2 6 5"/>',
+  bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/>'};
+document.querySelector('.who').innerHTML=`<select id="role" aria-label="Роль"><option value="parent">Родитель</option><option value="coach">Тренер</option><option value="admin">Администратор</option><option value="director">Руководитель школы</option><option value="owner">Собственник</option></select><select id="ident" aria-label="Кто вы"></select><span class="scope" id="scope"></span><button class="bell" id="bell" data-a="notif" aria-label="Уведомления"></button><button class="btn ghost sm" id="logout" data-a="logout" hidden>Выйти</button>`;
+function tabs(){return S.role==='parent'?[['home','Главная'],['sched','Расписание'],['chat','Чат'],['media','Полезное'],['profile','Ребёнок']]
+  :[['home','Сегодня'],['groups','Группы'],['sched','Расписание'],['chat','Чаты'],['media','Материалы']]}
+function header(){
+  $('#role').value=S.role;const id=$('#ident');
+  if(S.role==='parent'){id.hidden=false;id.innerHTML=GROUPS().flatMap(g=>KIDS.filter(k=>k.g===g)).map(k=>k.parents.map((p,i)=>`<option value="${k.id}|${i}">${esc(p.r)}: ${esc(short(k.name))} (${k.g})</option>`).join('')).join('');id.value=S.meKid+'|'+S.pidx}
+  else if(S.role==='coach'){id.hidden=false;id.innerHTML=COACHES().map(c=>`<option value="${c.id}">${esc(short(c.name))}</option>`).join('');id.value=S.coach}
+  else if(S.role==='admin'){id.hidden=false;id.innerHTML=ADMINS().map((a,i)=>`<option value="${i}">${esc(short(a))}</option>`).join('');id.value=String(S.admin)}
+  else id.hidden=true;
+  $('#scope').textContent=(S.role==='parent'?(ME?'Группа '+gl(ME.g):''):S.role==='coach'?'Группы: '+myGroups().join(', '):'Все группы')+(DB?' · общая база':'');
+  if(LOGIN){$('#role').hidden=true;id.hidden=true;$('#logout').hidden=!S.auth;$('#bell').hidden=!S.auth;
+    $('#scope').textContent=!S.auth?'Вход в приложение':S.role==='parent'?(myParent().n+' · '+(ME?gl(ME.g):'')):myName()+' · '+ROLE_LBL[S.role]}
+  if(LOGIN&&!S.auth){$('#nav').innerHTML='';return}
+  const nb=unreadNotifs();$('#bell').innerHTML='<svg viewBox="0 0 24 24">'+IC.bell+'</svg>'+(nb?`<span class="badge">${nb}</span>`:'');
+  const u=unreadChats();
+  $('#nav').innerHTML=tabs().map(([id,l])=>`<button data-a="tab" data-v="${id}" ${S.tab===id?'aria-current="page"':''}><svg viewBox="0 0 24 24">${IC[id]}</svg>${l}${id==='chat'&&u?`<span class="badge">${u}</span>`:''}</button>`).join('')}
+function render(){
+  if(LOGIN&&S.auth&&S.role==='parent'&&!kidById(S.auth.kid)){S.auth=null;lsSet('titan-auth',null)}
+  if(LOGIN&&!S.auth){header();$('#main').innerHTML=loginView();document.querySelectorAll('.sheet-bg').forEach(x=>x.remove());
+    if(S.toast){const t=document.createElement('div');t.className='toast';t.textContent=S.toast;document.body.appendChild(t);S.toast='';setTimeout(()=>t.remove(),2600)}saveLocal();return}
+  fixMe();header();
+  const V={home:S.role==='parent'?pHome:sHome,sched:schedule,chat:chat,media:media,profile:pProfile,groups:sGroups,school:school}[S.tab]||(S.role==='parent'?pHome:sHome);
+  $('#main').innerHTML=S.loading?'<div class="card"><div class="t">Загружаем данные школы…</div><div class="muted">Подключаемся к общей базе, это пару секунд.</div></div>'
+    :(!KIDS.length&&S.role==='parent')?'<div class="card"><div class="t">Хоккеистов пока нет</div><div class="muted">Администратор или руководитель добавляют карточки в разделе «Группы».</div></div>'
+    :V();
+  document.querySelectorAll('.sheet-bg').forEach(x=>x.remove());
+  if(S.sheet)document.body.insertAdjacentHTML('beforeend',`<div class="sheet-bg" data-a="closeSheet" data-self="1"><div class="sheet" role="dialog" aria-modal="true">${sheet()}</div></div>`);
+  if(S.toast){const t=document.createElement('div');t.className='toast';t.textContent=S.toast;document.body.appendChild(t);S.toast='';setTimeout(()=>t.remove(),2600)}
+  saveLocal()}
+
+/* ===================== ВХОД (версия для телефона) ===================== */
+const digits=s=>String(s||'').replace(/\D/g,'').slice(-10);
+function findParent(ph){const d=digits(ph);if(d.length<10)return null;for(const k of KIDS)for(let i=0;i<k.parents.length;i++)if(digits(k.parents[i].p)===d)return {kid:k.id,pidx:i};return null}
+function loginView(){const L=S.lg||(S.lg={tab:'parent',role:'coach'});
+  const ex=KIDS[0]&&KIDS[0].parents[0];
+  const parent=L.sent?`<div class="card form"><div class="t">Введите код из СМС</div><div class="muted">Код отправлен на номер ${esc(L.phone)}</div>
+      <input type="number" id="lgCode" inputmode="numeric" placeholder="Код из 4 цифр" aria-label="Код из СМС">
+      <div class="note">Тестовая версия: СМС не отправляется. Ваш код — <b>${L.code}</b></div>
+      <button class="btn red" data-a="lgCheck">Войти</button><button class="btn ghost sm" data-a="lgBack">Другой номер</button></div>`
+    :`<div class="card form"><div class="t">Вход для родителей</div>
+      <label class="field">Номер телефона, который вы оставили в школе<input type="tel" id="lgPhone" placeholder="+7 900 000-00-00" value="${esc(L.phone||'')}"></label>
+      <button class="btn red" data-a="lgSend">Получить код по СМС</button>
+      <div class="muted">Вы увидите только своего ребёнка, расписание его группы и свои чаты со школой.</div>
+      ${ex?`<div class="note">Для теста можно войти как мама: ${esc(ex.p)}</div>`:''}</div>`;
+  const people=L.role==='coach'?COACHES().map(c=>[c.id,c.name]):L.role==='admin'?ADMINS().map((a,i)=>[String(i),a]):L.role==='director'?[['d',DIRECTOR()]]:[['o',META.staff.owner||'Собственник']];
+  const staff=`<div class="card form"><div class="t">Вход для сотрудников</div>
+    <label class="field">Должность<select class="in" id="lgRole">${[['coach','Тренер'],['admin','Администратор'],['director','Руководитель школы'],['owner','Собственник']].map(([v,l])=>`<option value="${v}" ${v===L.role?'selected':''}>${l}</option>`).join('')}</select></label>
+    ${people.length>1?`<label class="field">Кто вы<select class="in" id="lgWho">${people.map(([v,n])=>`<option value="${esc(v)}" ${v===L.who?'selected':''}>${esc(n)}</option>`).join('')}</select></label>`:`<div class="muted">${esc(people[0]?people[0][1]:'')}</div><input type="hidden" id="lgWho" value="${esc(people[0]?people[0][0]:'')}">`}
+    <label class="field">Пароль<input type="password" id="lgPass" autocomplete="current-password"></label>
+    <div class="note">Тестовая версия: пароль для всех сотрудников — <b>${TEST_PASS}</b></div>
+    <button class="btn red" data-a="lgStaff">Войти</button></div>`;
+  return `<h2>Вход</h2><div class="seg" role="group"><button data-a="lgTab" data-v="parent" aria-pressed="${L.tab==='parent'}">Я родитель</button><button data-a="lgTab" data-v="staff" aria-pressed="${L.tab==='staff'}">Я сотрудник</button></div>
+  ${L.tab==='parent'?parent:staff}
+  <div class="muted">Тестовая версия: данные хранятся только на этом телефоне.</div>`}
+function doLogin(a){S.auth=a;lsSet('titan-auth',a);S.role=a.role;S.meKid=a.kid||S.meKid;S.pidx=a.pidx||0;S.coach=a.coach||S.coach;S.admin=a.admin||0;
+  S.lg=null;S.tab='home';S.thread=null;S.kid=null;S.group=null;S.draft=null;S.sel=[];S.seg='train';fixMe()}
+
+/* ===================== ВСПЛЫВАЮЩИЕ ОКНА ===================== */
+function payeeText(pe,k){return PAYEE_FIELDS.filter(([f])=>pe[f]).map(([f,l])=>l+': '+(f==='purpose'?purposeFor(pe,k):pe[f])).join('\n')}
+const purposeFor=(pe,k)=>String(pe.purpose||'Оплата за {ФИО ребёнка}').replace('{ФИО ребёнка}',k?k.name:'');
+function payeeBlock(pe,k,sum){const has=PAYEE_FIELDS.some(([f])=>f!=='purpose'&&pe[f]);
+  return `<div class="card"><div class="row"><div class="grow"><div class="t">${esc(pe.title)}</div><div class="muted">${esc(pe.recipient)}</div></div>${sum!=null?`<b class="num">${rub(sum)}</b>`:''}</div>
+  ${has?`<dl class="kv">${PAYEE_FIELDS.filter(([f])=>pe[f]&&f!=='recipient').map(([f,l])=>`<dt>${l}</dt><dd>${esc(f==='purpose'?purposeFor(pe,k):pe[f])}</dd>`).join('')}</dl>
+  <div class="row" style="gap:6px;flex-wrap:wrap"><button class="btn ghost sm" data-a="copyReq" data-v="${pe.id}">Скопировать реквизиты</button>${pe.sbp?`<button class="btn ghost sm" data-a="copyTxt" data-v="${esc(pe.sbp)}">Телефон для СБП</button>`:''}</div>`
+  :'<div class="muted">Реквизиты ещё не внесены руководителем.</div>'}</div>`}
+function sheet(){
+  if(S.sheet==='notif'){const list=myNotifs();const s=seen('notif');setTimeout(()=>{markSeen('notif');header()},0);
+    return `<div class="row"><h2 class="grow">Уведомления</h2><button class="btn ghost sm" data-a="closeSheet">Закрыть</button></div>
+    <div class="note">Здесь только важное: оплаты, расписание, турниры, документы. Переписка остаётся в разделе «Чат».</div>
+    <div class="list">${list.map(n=>`<div class="item n-item ${(n.ts||0)>s?'unread':''}"><div class="grow"><div class="t">${esc(n.t)}</div><div class="muted">${esc(n.d)}</div></div></div>`).join('')||'<div class="muted">Пока пусто.</div>'}</div>`}
+  if(S.sheet==='pay'){const k=ME,sums=paySums(k),pend=PAYREQ.filter(p=>p.kid===k.id);const pays=PAYEES().filter(pe=>sums[pe.id]);
+    const sel=S.payPay&&sums[S.payPay]?S.payPay:(pays[0]||PAYEES()[0]).id;
+    return `<div class="row"><h2 class="grow">Оплата</h2><button class="btn ghost sm" data-a="closeSheet">Закрыть</button></div>
+    <div class="card"><div class="muted">К оплате всего</div><div class="big">${rub(k.debt)}</div>
+    <div class="list">${k.items.map(i=>`<div class="item"><div class="grow">${esc(i.t)}<div class="muted">${esc(i.d)} · ${esc(payeeById(i.pay||'ano').title)}</div></div><b class="num">${rub(i.s)}</b></div>`).join('')}</div>
+    ${pays.length>1?'<div class="note">Деньги идут двум получателям: переведите каждую сумму на свои реквизиты.</div>':''}</div>
+    <div class="t">1. Переведите деньги</div>
+    ${pays.map(pe=>payeeBlock(pe,k,sums[pe.id])).join('')||'<div class="muted">Долга нет.</div>'}
+    <div class="card"><div class="t">2. Сообщите об оплате</div>
+    ${pend.length?pend.map(p=>`<div class="row"><span class="pill warn">На проверке</span><span class="grow">${rub(p.sum)} · ${esc(payeeById(p.pay).title)} · ${esc(p.d)}</span></div>`).join(''):''}
+    <form id="payForm" class="form">
+    ${pays.length>1?`<label class="field">Кому перевели<select class="in" id="payPay">${pays.map(pe=>`<option value="${pe.id}" ${pe.id===sel?'selected':''}>${esc(pe.title)} — ${rub(sums[pe.id])}</option>`).join('')}</select></label>`:`<input type="hidden" id="payPay" value="${sel}">`}
+    <label class="field">Сумма, ₽<input type="number" id="paySum" min="1" value="${sums[sel]||''}" required></label>
+    <label class="field">Чек или скриншот перевода<input type="file" id="payFile" accept="image/*,application/pdf"></label>
+    <button class="btn red" type="submit">Я оплатил(а)</button></form>
+    <div class="muted">Администратор проверит поступление и закроет долг. Вам придёт уведомление.</div></div>`}
+  if(S.sheet==='file'){const f=S.file||{};
+    return `<div class="row"><h2 class="grow">Документ</h2><button class="btn ghost sm" data-a="closeSheet">Закрыть</button></div>
+    ${f.loading?'<div class="muted">Загружаем…</div>':f.missing?'<div class="muted">Файл не найден. Возможно, его загрузили до подключения общей базы.</div>'
+      :`<div class="t" style="overflow-wrap:anywhere">${esc(f.name)}</div>${String(f.type).startsWith('image/')?`<img class="view" src="${f.data}" alt="${esc(f.name)}">`
+      :`<a class="btn linkbtn" href="${dataToBlobUrl(f.data)}" target="_blank" rel="noopener">Открыть файл</a><div class="muted">Если файл не открылся, попросите прислать его фотографией.</div>`}`}`}
+  return ''}
+
+/* ===================== ОБЩИЕ БЛОКИ ===================== */
+function attStats(k){const c=(k.att||[]).filter(a=>a.s!=='б');return [c.filter(a=>a.s==='+').length,c.length]}
+const attCell=a=>`<div class="${a.s==='+'?'p':a.s==='-'?'m':'s'}"><b>${a.s==='+'?'✓':a.s==='-'?'✗':'Бол.'}</b>${a.d}</div>`;
+const attLegend='<div class="muted">✓ был · ✗ пропуск · Бол. — болел (не считается пропуском)</div>';
+function medStatus(k){return [['spr','Медицинская справка'],['ins','Страховка спортсмена']].map(([key,n])=>{const d=(k.med||{})[key];
+  const left=d?daysLeft(d):-1;const pill=!d?'<span class="pill bad">нет</span>':left<0?'<span class="pill bad">истекла</span>':left<=30?`<span class="pill warn">${left} дн.</span>`:'<span class="pill ok">действует</span>';
+  return {key,n,d,left,pill}})}
+function medBlock(k,editable){
+  const ms=medStatus(k),m=k.med||{};
+  const rows=ms.map(x=>`<div class="item"><div class="grow"><div class="t">${x.n}</div><div class="muted">${x.d?'до '+x.d:'не сдана'}${x.key==='ins'&&m.insFile?' · полис прикреплён':''}</div></div>${x.key==='ins'&&m.insFile?`<button class="btn ghost sm" data-a="openFile" data-v="${m.insFile}">Полис</button>`:''}${x.pill}</div>`).join('');
+  const form=editable&&S.editMed?`<form id="medForm" class="form" data-kid="${k.id}">
+    <label class="field">Справка действует до<input type="date" id="mSpr" value="${toISO(m.spr)}"></label>
+    <label class="field">Страховка действует до<input type="date" id="mIns" value="${toISO(m.ins)}"></label>
+    <label class="field">Фото или PDF страхового полиса${m.insFile?' (заменит прикреплённый)':''}<input type="file" id="mInsFile" accept="image/*,application/pdf"></label>
+    <div class="row"><button class="btn red grow" type="submit">Сохранить</button><button class="btn ghost" type="button" data-a="medCancel">Отмена</button></div></form>`
+    :editable?`<button class="btn ghost sm" data-a="medEdit">${S.role==='parent'?'Обновить сроки или загрузить страховку':'Изменить сроки'}</button>`:'';
+  return `<div class="card"><div class="list">${rows}</div>${form}
+  <div class="muted">${S.role==='parent'?'Медицинскую справку передайте администратору лично: мы храним только срок её действия. Напомним за 30 дней.':'Без действующей справки и страховки ребёнка не допускают на лёд.'}</div></div>`}
+function docsBlock(k,ro){
+  return `<h3>Документы</h3><div class="card"><div class="list">${(k.docs||[]).map((d,i)=>{const ext=(String(d.n).split('.').pop()||'').toUpperCase().slice(0,4);
+    return `<div class="item"><div class="doc">${esc(ext)}</div><div class="grow"><div class="t" style="overflow-wrap:anywhere">${esc(d.n)}</div><div class="muted">${esc(d.by)} · ${esc(d.d)}</div></div>${d.fid?`<button class="btn ghost sm" data-a="openFile" data-v="${d.fid}">Открыть</button>`:''}${canManage()?`<button class="btn ghost sm" data-a="delDoc" data-v="${k.id}|${i}" aria-label="Удалить документ">✕</button>`:''}</div>`}).join('')||'<div class="muted">Документов пока нет.</div>'}</div>
+  ${ro?'<div class="muted">Только просмотр.</div>':`<label class="btn ghost block" style="text-align:center" for="docfile">Загрузить документ</label><input type="file" id="docfile" data-kid="${k.id}" accept="image/*,application/pdf" hidden>
+  <div class="muted">Договор, заявления, согласия — фото или PDF до 170 КБ. Фото сжимается автоматически.</div>`}</div>`}
+function progBlock(k,editable){
+  return `<div class="card">
+  ${(k.cmts||[]).map(c=>`<div class="cmt">${esc(c.t)}${c.url?`<div style="margin-top:6px"><a class="btn ghost sm linkbtn" href="${esc(c.url)}" target="_blank" rel="noopener">▶ Смотреть видео</a></div>`:''}<small>${esc(c.by)} · ${esc(c.d)}</small></div>`).join('')||'<div class="muted">Комментариев тренера пока нет.</div>'}
+  ${editable?`<form id="cmtForm" class="form" data-kid="${k.id}"><textarea id="cmt" placeholder="Комментарий для родителей: что получается, над чем работать дома"></textarea>
+  <label class="field">Короткое видео — ссылка (VK Видео, Rutube, YouTube)<input type="url" id="cmtUrl" placeholder="https://…"></label>
+  <button class="btn red" type="submit">Отправить родителям</button></form>`:''}</div>`}
+function sizesBlock(k,editable){
+  const F=[['skates','Коньки (модель, размер, полнота)'],['stick','Клюшка (флекс, хват, длина)'],['helmet','Шлем'],['jersey','Игровая форма']];const sz=k.sizes||{};
+  if(editable&&S.editSizes)return `<div class="card">${F.map(([id,l])=>`<label class="field">${l}<input type="text" id="sz_${id}" value="${esc(sz[id])}"></label>`).join('')}<div class="row"><button class="btn red grow" data-a="saveSizes">Сохранить</button><button class="btn ghost" data-a="sizesCancel">Отмена</button></div></div>`;
+  return `<div class="card"><dl class="kv">${F.map(([id,l])=>`<dt>${l.split(' (')[0]}</dt><dd>${esc(sz[id])||'<span class="muted">не указано</span>'}</dd>`).join('')}</dl>${editable?'<button class="btn ghost sm" data-a="editSizes">Изменить размеры</button>':''}</div>`}
+function kidHead(k){const [p,t]=attStats(k);return `<div class="card"><div class="kid"><div class="jersey">${esc(k.num??'')}</div><div class="grow"><div class="name">${esc(k.name)}</div><div class="muted">${esc(k.pos)} · ${esc(gl(k.g))}</div><div class="row" style="margin-top:6px;gap:6px"><span class="pill ${t&&p/t>=.8?'ok':'warn'}">Посещаемость ${p} из ${t}</span></div></div></div></div>`}
+
+/* ---- форма карточки хоккеиста (родитель / админ / новый) ---- */
+function startDraft(mode,k){const parts=String(k?k.name:'').split(' ');
+  S.draft={mode,id:k?k.id:null,f:parts[0]||'',i:parts[1]||'',o:parts.slice(2).join(' '),g:k?k.g:(S.group||GROUPS()[0]),pos:k?k.pos:POS[0],num:k?(k.num??''):'',
+    parents:k?k.parents.map(c=>({...c})):[{r:'Мама',n:'',p:''},{r:'Папа',n:'',p:''}],rel:k?(k.rel||[]).map(c=>({...c})):[]}}
+function readDraft(){const D=S.draft;if(!D)return;const g=id=>{const e=document.getElementById(id);return e?e.value:null};
+  [['kF','f'],['kI','i'],['kO','o'],['kG','g'],['kPos','pos'],['kNum','num']].forEach(([id,f])=>{const v=g(id);if(v!==null)D[f]=v});
+  D.parents.forEach((c,j)=>{const n=g('pn'+j),p=g('pp'+j);if(n!==null)c.n=n;if(p!==null)c.p=p});
+  D.rel.forEach((c,j)=>{const r=g('rr'+j),n=g('rn'+j),p=g('rp'+j);if(r!==null)c.r=r;if(n!==null)c.n=n;if(p!==null)c.p=p})}
+function draftForm(){const D=S.draft,staff=D.mode!=='parent';
+  const row=(c,kind,i)=>`<div class="cedit"><div class="row">${kind==='p'?`<b class="grow">${esc(c.r)}</b>`:`<input type="text" class="grow" id="rr${i}" value="${esc(c.r)}" placeholder="Кто: бабушка, няня…" aria-label="Кем приходится">`}
+    <button class="btn ghost sm" data-a="delContact" data-v="${kind}|${i}">Удалить</button></div>
+    <input type="text" id="${kind}n${i}" value="${esc(c.n)}" placeholder="Фамилия Имя Отчество" aria-label="ФИО">
+    <input type="tel" id="${kind}p${i}" value="${esc(c.p)}" placeholder="+7 900 000-00-00" aria-label="Телефон"></div>`;
+  return `<div class="card form">
+    <div class="t">${D.mode==='new'?'Новый хоккеист':'Ребёнок'}</div>
+    <div class="grid2"><label class="field">Фамилия<input type="text" id="kF" value="${esc(D.f)}"></label><label class="field">Имя<input type="text" id="kI" value="${esc(D.i)}"></label></div>
+    <label class="field">Отчество<input type="text" id="kO" value="${esc(D.o)}"></label>
+    <div class="grid2"><label class="field">Группа (год рождения)<select class="in" id="kG">${GROUPS().map(g=>`<option ${g===D.g?'selected':''}>${esc(g)}</option>`).join('')}</select></label>
+    <label class="field">Амплуа<select class="in" id="kPos">${POS.map(p=>`<option ${p===D.pos?'selected':''}>${p}</option>`).join('')}</select></label></div>
+    ${staff?`<label class="field">Игровой номер<input type="number" id="kNum" min="0" max="99" value="${esc(D.num)}"></label>`:''}
+    ${D.mode==='parent'?'<div class="muted">Если смените год рождения, ребёнок перейдёт в другую группу и её расписание.</div>':''}
+    <div class="t">Родители</div>${D.parents.map((c,i)=>row(c,'p',i)).join('')||'<div class="muted">Укажите хотя бы одного родителя.</div>'}
+    ${D.parents.length<2?`<button class="btn ghost sm" data-a="addParent">Добавить ${D.parents.some(c=>c.r==='Мама')?'папу':D.parents.some(c=>c.r==='Папа')?'маму':'родителя'}</button>`:''}
+    <div class="t">Доверенные лица</div>${D.rel.map((c,i)=>row(c,'r',i)).join('')||'<div class="muted">Нет. Добавьте, если ребёнка может забирать кто-то ещё.</div>'}
+    <button class="btn ghost sm" data-a="addRel">Добавить родственника</button>
+    <div class="row"><button class="btn red grow" data-a="saveDraft">${D.mode==='new'?'Добавить в школу':'Сохранить'}</button><button class="btn ghost" data-a="cancelDraft">Отмена</button></div></div>`}
+function saveDraft(){readDraft();const D=S.draft;
+  const clean=arr=>arr.map(c=>({r:String(c.r).trim()||'Доверенное лицо',n:String(c.n).trim(),p:String(c.p).trim()})).filter(c=>c.n);
+  const parents=clean(D.parents),rel=clean(D.rel),name=[D.f,D.i,D.o].map(x=>String(x).trim()).filter(Boolean).join(' ');
+  if(!String(D.f).trim()||!String(D.i).trim())return toast('Укажите фамилию и имя ребёнка');
+  if(!parents.length)return toast('Нужен хотя бы один родитель с ФИО и телефоном');
+  const num=D.num===''?null:+D.num;
+  if(D.mode==='new'){const k={id:uid('k'),name,g:D.g,num,pos:D.pos,debt:0,parents,rel,items:[],pays:[],att:[],docs:[],med:{spr:'',ins:'',insFile:null,insName:null},sizes:{skates:'',stick:'',helmet:'',jersey:''},prog:[],cmts:[]};
+    KIDS.push(k);KIDS.sort(SORT.kids);S.group=k.g;S.kid=k.id;toast('Карточка добавлена в группу '+k.g)}
+  else{const k=kidById(D.id);if(!k)return;const moved=k.g!==D.g;k.name=name;k.g=D.g;k.pos=D.pos;k.parents=parents;k.rel=rel;if(D.mode!=='parent')k.num=num;
+    if(moved&&D.mode==='parent')notify({aud:'staff',roles:['admin','director'],t:`${short(name)}: родитель изменил год рождения на ${D.g}`});
+    toast(moved?'Сохранено. Ребёнок переведён в группу '+D.g:'Данные сохранены')}
+  S.draft=null}
+
+/* ===================== РОДИТЕЛЬ ===================== */
+function debtCard(k){
+  const pend=PAYREQ.filter(p=>p.kid===k.id);
+  const pendHtml=pend.map(p=>`<div class="row"><span class="pill warn">На проверке</span><span class="grow muted">Оплата ${rub(p.sum)} от ${esc(p.d)}</span></div>`).join('');
+  if(!k.debt)return `<div class="card debt clear"><div class="row"><div class="grow"><div class="muted">Задолженность</div><div class="big" style="color:var(--ok)">0 ₽</div></div><span class="pill ok">Оплачено</span></div>${pendHtml}</div>`;
+  const late=TODAY_D.getDate()>DUE_DAY&&k.items.some(i=>/^Абонемент/.test(i.t));
+  return `<div class="card debt"><div class="row"><div class="grow"><div class="muted">К оплате</div><div class="big">${rub(k.debt)}</div></div><span class="pill ${late?'bad':'warn'}">${late?'просрочено':'до '+dueDate()}</span></div>
+  <div class="list">${k.items.map(i=>`<div class="item"><div class="grow">${esc(i.t)}<div class="muted">${esc(i.d)} · ${esc(payeeById(i.pay||'ano').title)}</div></div><b class="num">${rub(i.s)}</b></div>`).join('')}</div>
+  ${pendHtml}<button class="btn red block" data-a="pay">Как оплатить</button><div class="muted">Абонемент оплачивается до ${DUE_DAY}-го числа каждого месяца.</div></div>`}
+const byTime=(a,b)=>String(a.s).localeCompare(String(b.s));
+function upcoming(g,n){const out=[];for(let i=0;i<7&&out.length<n;i++){const di=(TIDX+i)%7,dt=fmt(addDays(TODAY_D,i));
+  EVENTS.filter(e=>e.d===di&&e.g===g).sort(byTime).forEach(e=>out.push({...e,dw:DOW[di],dt,i}))}return out.slice(0,n)}
+const evTime=e=>`${e.s}–${e.e}`;
+function evRow(e,opts={}){return `<div class="ev-i" style="flex-wrap:wrap"><span class="time">${esc(e.s)}</span><div class="grow"><b>${TYPES[e.type]||esc(e.type)}</b>${opts.showG&&e.g!=='all'?' · '+e.g:''}<div class="muted">${e.dw?e.dw+', '+e.dt+' · ':''}${esc(evTime(e))} · ${esc(e.place||PLACE[e.type])}</div></div>${e.type==='mass'?'<span class="pill">для всех</span>':''}${opts.extra||''}</div>`}
+function tourCard(t,k){const a=(t.ans||{})[k.id];
+  return `<div class="card tour"><span class="pill" style="align-self:flex-start;background:var(--gold);color:var(--gold-ink)">Турнир · ${esc(gl(t.g))}</span>
+  <div class="t" style="font-size:17px">${esc(t.title)}</div>
+  <dl class="kv"><dt>Когда</dt><dd>${esc(t.dates)}</dd><dt>Где</dt><dd>${esc(t.place)}</dd><dt>Сбор</dt><dd>${esc(t.meet)}</dd></dl>
+  ${a==='yes'?`<div class="row"><span class="pill ok">Участие подтверждено</span><button class="btn ghost sm" data-a="tour" data-v="${t.id}|no">Не поедем</button></div>`
+   :a==='no'?`<div class="row"><span class="pill">Не едем</span><button class="btn ghost sm" data-a="tour" data-v="${t.id}|yes">Всё-таки едем</button></div>`
+   :`<div class="muted">Ответьте до ${esc(t.deadline)}. Турнирный взнос оплачивается отдельно, не через приложение.</div><div class="row"><button class="btn red grow" data-a="tour" data-v="${t.id}|yes">Едем</button><button class="btn ghost grow" data-a="tour" data-v="${t.id}|no">Не едем</button></div>`}</div>`}
+function pHome(){if(!ME)return '';const k=ME;
+  const mine=SLOTS.filter(s=>(s.seats||[]).includes(k.id)),waits=SLOTS.filter(s=>(s.wait||[]).includes(k.id));
+  const alerts=medStatus(k).filter(m=>m.left<=30).map(m=>`<div class="card alert"><div class="t">${m.n}: ${!m.d?'не сдана':m.left<0?'срок истёк':'осталось '+m.left+' дн.'}</div><div class="muted">${m.key==='ins'?'Загрузите новый полис в разделе «Ребёнок».':'Передайте новую справку администратору.'} Без действующего документа ребёнка не допустят на лёд.</div><button class="btn ghost sm" data-a="goMed">Открыть</button></div>`).join('');
+  const nextEv=upcoming(k.g,10).map(e=>{const ab=ABS()[k.id+'|'+e.dt];let extra;
+    if(ab)extra=`<div style="flex-basis:100%;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="pill warn">Не придёт: ${esc(ab)}</span><button class="btn ghost sm" data-a="absUndo" data-v="${e.dt}">Всё-таки придёт</button></div>`;
+    else if(S.absAsk===e.dt)extra=`<div style="flex-basis:100%;display:flex;gap:6px;flex-wrap:wrap"><span class="muted" style="flex-basis:100%">Почему не придёт?</span><button class="btn sm" data-a="abs" data-v="${e.dt}|болеет">Болеет</button><button class="btn sm" data-a="abs" data-v="${e.dt}|другая причина">Другая причина</button><button class="btn ghost sm" data-a="absAsk" data-v="">Отмена</button></div>`;
+    else extra=`<div style="flex-basis:100%;display:flex;gap:8px;align-items:center"><span class="pill ok">Придёт</span><button class="btn ghost sm" data-a="absAsk" data-v="${e.dt}">Не сможет прийти</button></div>`;
+    return evRow(e,{extra})}).join('');
+  const feed=POSTS.filter(x=>x.g==='all'||x.g===k.g);
+  return `${kidHead(k)}${alerts}${debtCard(k)}
+  ${TOURS.filter(x=>x.g===k.g).map(x=>tourCard(x,k)).join('')}
+  <h3>Тренировки на 7 дней</h3>
+  <div class="card">${nextEv||'<div class="muted">В расписании группы пока нет тренировок.</div>'}<div class="muted">По умолчанию ребёнок отмечен как «Придёт». Если не сможет, нажмите кнопку — тренер увидит это заранее.</div></div>
+  <h3>Индивидуальные</h3>
+  <div class="card">${mine.map(s=>`<div class="row"><div class="grow"><b>${WEEK[s.d][0]}, ${WEEK[s.d][1]} в ${esc(s.t)}</b><div class="muted">${esc(short((coachById(s.c)||{}).name))} · ${esc(s.k)} · ${rub(indPrice(s.cap))}</div></div><span class="pill ok">Записан</span></div>`).join('')}
+  ${waits.map(s=>`<div class="row"><div class="grow"><b>${WEEK[s.d][0]}, ${WEEK[s.d][1]} в ${esc(s.t)}</b><div class="muted">${esc(short((coachById(s.c)||{}).name))}</div></div><span class="pill warn">Лист ожидания</span></div>`).join('')}
+  ${!mine.length&&!waits.length?'<div class="muted">Записей нет.</div>':''}
+  <button class="btn sm" data-a="goInd">${mine.length?'Записаться ещё':'Записаться на индивидуальные'}</button></div>
+  ${feed.length?`<h3>Акции и новости</h3><div class="hscroll">${feed.map(x=>`<div class="promo"><span class="pill ${x.type==='promo'?'bad':'ice'}" style="align-self:flex-start">${x.type==='promo'?'Акция':'Новость'}${x.g!=='all'?' · '+x.g:''}</span><b>${esc(x.title)}</b><div class="muted">${esc(x.text)}</div></div>`).join('')}</div>`:''}`}
+function pProfile(){if(!ME)return '';const k=ME,[p,t]=attStats(k);const D=S.draft&&S.draft.mode==='parent'?S.draft:null;
+  return `${kidHead(k)}
+  <div class="row"><h3 class="grow" style="margin:6px 0 -4px">Ребёнок и контакты</h3>${D?'':'<button class="btn ghost sm" data-a="editMe">Изменить</button>'}</div>
+  ${D?draftForm():`<div class="card"><dl class="kv"><dt>ФИО</dt><dd>${esc(k.name)}</dd><dt>Группа</dt><dd>${esc(gl(k.g))}</dd><dt>Амплуа</dt><dd>${esc(k.pos)}</dd>
+    ${k.parents.concat(k.rel||[]).map(c=>`<dt>${esc(c.r)}</dt><dd>${esc(c.n)}<br><span class="num">${esc(c.p)}</span></dd>`).join('')}</dl></div>`}
+  <h3 id="medH">Справка и страховка</h3>${medBlock(k,true)}
+  <h3>Прогресс</h3>${progBlock(k,false)}
+  <h3>Посещаемость, октябрь</h3>
+  <div class="card"><div class="row"><div class="big">${t?Math.round(p/t*100):0}%</div><div class="muted grow">${p} из ${t} тренировок<br>болезнь не считается пропуском</div></div>
+  <div class="att">${(k.att||[]).map(attCell).join('')}</div>${attLegend}</div>
+  <h3>Размеры экипировки</h3>${sizesBlock(k,true)}
+  ${docsBlock(k)}
+  <h3>Оплаты</h3>
+  <div class="card"><div class="list">${(k.pays||[]).map(x=>`<div class="item"><div class="grow">${esc(x.t)}<div class="muted">${esc(x.d)}${x.rc?' · квитанция №'+esc(x.rc):''}</div></div><b class="num">${rub(x.s)}</b></div>`).join('')||'<div class="muted">Оплат пока не было.</div>'}</div></div>
+  <h3>Стоимость услуг</h3>${pricesBlock(k.g)}
+  <div class="card"><div class="t">Согласие на обработку персональных данных</div><div class="muted">Данные видны только тренеру вашей группы и администрации школы.</div></div>
+  ${DB?'':'<div class="card"><div class="muted">Демо-версия без общей базы: изменения сохраняются только на этом телефоне.</div><button class="btn ghost sm" data-a="reset">Сбросить демо-данные</button></div>'}`}
+
+function pricesBlock(g){
+  const rows=(arr)=>arr.map(([n,v,sub])=>`<div class="item"><div class="grow">${n}${sub?`<div class="muted">${sub}</div>`:''}</div><b class="num">${v}</b></div>`).join('');
+  const gp=g?[[`Секция, ${esc(gl(g))}, в месяц`,groupPrice(g)?rub(groupPrice(g)):'—','оплата до '+DUE_DAY+'-го числа · '+esc(payeeById('ano').title)]]:GROUPS().map(x=>[`Секция, ${esc(gl(x))}, в месяц`,groupPrice(x)?rub(groupPrice(x)):'—','']);
+  return `<div class="card"><div class="list">${rows(gp)}</div>
+  <div class="t" style="margin-top:6px">Индивидуальные, 60 мин, с человека</div>
+  <div class="prog"><span class="h">Участников</span><span class="h">Для секции</span><span class="h">Сторонние</span>
+  ${[1,2,3,4,5,6].map(n=>`<span>${n===6?'6 и больше':n}</span><b class="num">${rub(IND_SEC[n])}</b><span class="num muted">${rub(IND_EXT[n])}</span>`).join('')}</div>
+  <div class="t" style="margin-top:6px">Услуги арены</div>
+  <div class="list">${rows(SERVICES.map(x=>[esc(x.n),rub(x.p),esc(payeeById(x.pay).title)]))}</div></div>`}
+
+/* ===================== РАСПИСАНИЕ ===================== */
+function evForm(e,isMass){const x=e||{g:isMass?'all':(S.group||GROUPS()[0]),type:isMass?'mass':'ice',d:TIDX,s:'17:00',e:'18:30',place:''};
+  return `<form id="evForm" class="card form" data-id="${e?e.id:''}"><div class="t">${e?'Изменить':'Добавить'} ${isMass?'массовое катание':'тренировку'}</div>
+  ${isMass?'<input type="hidden" id="evG" value="all"><input type="hidden" id="evType" value="mass">':`<div class="grid2"><label class="field">Группа<select class="in" id="evG">${GROUPS().map(g=>`<option ${g===x.g?'selected':''}>${g}</option>`).join('')}</select></label>
+  <label class="field">Тип<select class="in" id="evType">${['ice','ofp','game'].map(t=>`<option value="${t}" ${t===x.type?'selected':''}>${TYPES[t]}</option>`).join('')}</select></label></div>`}
+  <label class="field">День недели<select class="in" id="evD">${DOWFULL.map((d,i)=>`<option value="${i}" ${i===x.d?'selected':''}>${d}</option>`).join('')}</select></label>
+  <div class="grid2"><label class="field">Начало<input type="time" id="evS" value="${esc(x.s)}" required></label><label class="field">Конец<input type="time" id="evE" value="${esc(x.e)}" required></label></div>
+  <label class="field">Место<input type="text" id="evPlace" value="${esc(x.place)}" placeholder="${esc(PLACE[x.type])}"></label>
+  <div class="row"><button class="btn red grow" type="submit">Сохранить и уведомить</button><button class="btn ghost" type="button" data-a="evCancel">Отмена</button></div></form>`}
+function slotForm(){const coachOnly=S.role==='coach';return `<form id="slForm" class="card form"><div class="t">Новое окно для индивидуальной</div>
+  <div class="grid2"><label class="field">День<select class="in" id="slD">${DOWFULL.map((d,i)=>`<option value="${i}" ${i===TIDX?'selected':''}>${d}</option>`).join('')}</select></label>
+  <label class="field">Время<input type="time" id="slT" value="13:00" required></label></div>
+  ${coachOnly?`<input type="hidden" id="slC" value="${S.coach}">`:`<label class="field">Тренер<select class="in" id="slC">${COACHES().map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select></label>`}
+  <div class="grid2"><label class="field">Вид<select class="in" id="slK">${KINDS.map(k=>`<option>${k}</option>`).join('')}</select></label>
+  <label class="field">Мест<select class="in" id="slCap">${[1,2,3,4,5,6].map(n=>`<option value="${n}">${n} · ${rub(IND_SEC[n])} с чел.</option>`).join('')}</select></label></div>
+  <div class="row"><button class="btn red grow" type="submit">Добавить окно</button><button class="btn ghost" type="button" data-a="slCancel">Отмена</button></div></form>`}
+function schedule(){
+  const seg=[['train','Тренировки'],['ind','Индивидуальные']];if(S.seg==='mass')S.seg='train';
+  let body='';const ed=canManage();
+  if(S.seg==='ind')body=indSlots();
+  else{const mass=S.seg==='mass';
+    body=(ed&&S.evEdit==='new'?evForm(null,mass):ed?`<button class="btn ghost" data-a="evNew">${mass?'Добавить массовое катание':'Добавить тренировку'}</button>`:'')+
+    `<div class="card" style="gap:14px">${WEEK.map(([dw,dt],i)=>{
+      const evs=EVENTS.filter(e=>e.d===i&&(mass?e.type==='mass':e.type!=='mass'&&visibleGroup(e.g))).sort(byTime);if(!evs.length)return '';
+      return `<div class="day ${i===TIDX?'today':''}"><div class="date"><b>${dt.slice(0,2)}</b><span>${dw}</span></div><div class="ev">${evs.map(e=>{
+        if(ed&&S.evEdit===e.id)return evForm(e,mass);
+        const extra=ed?(S.evDel===e.id?`<div style="flex-basis:100%;display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="danger">Удалить из расписания?</span><button class="btn warnb sm" data-a="evDelYes" data-v="${e.id}">Удалить</button><button class="btn ghost sm" data-a="evDelNo">Нет</button></div>`
+          :`<div class="row" style="gap:6px"><button class="btn ghost sm" data-a="evEdit" data-v="${e.id}">Изменить</button><button class="btn ghost sm" data-a="evDel" data-v="${e.id}" aria-label="Удалить">✕</button></div>`):'';
+        return evRow(e,{showG:isStaff(),extra})}).join('')}</div></div>`}).join('')||'<div class="muted">На этой неделе ничего нет.</div>'}</div>`}
+  return `<h2>Неделя ${WEEK[0][1]}–${WEEK[6][1]}</h2>
+  <div class="seg" role="group">${seg.map(([id,l])=>`<button data-a="seg" data-v="${id}" aria-pressed="${S.seg===id}">${l}</button>`).join('')}</div>
+  ${S.seg==='train'&&S.role==='parent'&&ME?`<div class="note">Расписание вашей группы — ${esc(gl(ME.g))}</div>`:''}
+  ${S.seg==='train'?myGroups().filter(g=>!EVENTS.some(e=>e.g===g)).map(g=>`<div class="note">Группа ${esc(gl(g))}: расписание уточняется.</div>`).join(''):''}
+  ${S.seg!=='ind'&&ed?'<div class="note">Изменения сразу видят родители группы, им придёт уведомление.</div>':''}
+  ${body}`}
+function slotLine(s){const co=coachById(s.c)||{};return `${esc(short(co.name))} · 60 мин · мест ${s.cap||1} · ${rub(indPrice(s.cap))} с чел.`}
+function indSlots(){
+  if(S.role==='parent'){const k=ME;if(!k)return '';const sel=S.sel;let total=0;
+    const html=WEEK.map(([dw,dt],i)=>{const ss=SLOTS.filter(s=>s.d===i);if(!ss.length)return '';
+      return `<div class="day"><div class="date"><b>${dt.slice(0,2)}</b><span>${dw}</span></div><div class="ev">${ss.map(s=>{let right='',cls='';const left=seatsLeft(s),mine=(s.seats||[]).includes(k.id);
+        if(mine)right=`<span class="pill ok">Вы записаны</span>`+(canCancel(s)?`<button class="btn ghost sm" data-a="unbook" data-v="${s.id}">Отменить</button>`:`<span class="muted" style="flex-basis:100%">Отмена без оплаты — не позднее чем за 24 часа. Сейчас отменить может только администратор.</span>`);
+        else if(left<=0)right=(s.wait||[]).includes(k.id)?`<span class="pill warn">В ожидании</span><button class="btn ghost sm" data-a="unwait" data-v="${s.id}">Выйти</button>`:`<span class="pill">Мест нет</span><button class="btn ghost sm" data-a="wait" data-v="${s.id}">В лист ожидания</button>`;
+        else{const on=sel.includes(s.id);if(on){cls='sel';total+=indPrice(s.cap)}right=`${(s.cap||1)>1?`<span class="pill">свободно ${left} из ${s.cap}</span>`:''}<button class="btn ${on?'red':''} sm" data-a="pick" data-v="${s.id}" aria-pressed="${on}">${on?'Выбрано ✓':'Выбрать'}</button>`}
+        return `<div class="ev-i ${cls}" style="flex-wrap:wrap"><span class="time">${esc(s.t)}</span><div class="grow"><b>${esc(s.k)}</b><div class="muted">${slotLine(s)}</div></div><div class="row" style="gap:6px;flex-wrap:wrap">${right}</div></div>`}).join('')}</div></div>`}).join('');
+    return `<div class="note">Отметьте одно или несколько окон и нажмите «Сохранить запись». Цена с человека зависит от числа мест в окне. Отменить без оплаты можно не позднее чем за 24 часа.</div>
+    <div class="card" style="gap:14px">${html||'<div class="muted">Свободных окон пока нет.</div>'}</div>
+    ${sel.length?`<div class="savebar"><div class="grow"><b>Выбрано: ${sel.length}</b><br><span class="num">${rub(total)}</span></div><button class="btn ghost sm" data-a="pickClear">Сбросить</button><button class="btn" data-a="bookSel">Сохранить запись</button></div>`:''}`}
+  if(S.role==='coach'){const my=SLOTS.filter(s=>s.c===S.coach),booked=my.filter(s=>(s.seats||[]).length),free=my.filter(s=>seatsLeft(s)>0);
+    return `<div class="card"><div class="t">Записались ко мне</div>${booked.length?`<div class="list">${booked.map(s=>`<div class="item" style="flex-wrap:wrap"><div class="grow"><div class="t">${WEEK[s.d][0]}, ${WEEK[s.d][1]} в ${esc(s.t)}</div><div class="muted">${esc(s.k)} · мест ${s.cap||1}${(s.wait||[]).length?' · ждут: '+s.wait.length:''}</div></div><div style="text-align:right">${s.seats.map(id=>{const k=kidById(id);return `<div><b>${esc(k?short(k.name):'—')}</b> <span class="muted">${k?esc(gl(k.g)):''}</span></div>`}).join('')}</div></div>`).join('')}</div>`:'<div class="muted">На этой неделе к вам пока никто не записался.</div>'}</div>
+    ${S.slEdit?slotForm():'<button class="btn ghost" data-a="slNew">Добавить своё окно</button>'}
+    <div class="card"><div class="t">Мои окна со свободными местами</div>${free.length?`<div class="list">${free.map(s=>`<div class="item" style="flex-wrap:wrap"><div class="grow"><div class="t">${WEEK[s.d][0]}, ${WEEK[s.d][1]} в ${esc(s.t)}</div><div class="muted">${esc(s.k)} · свободно ${seatsLeft(s)} из ${s.cap||1}</div></div>${S.slDel===s.id?`<div class="row" style="gap:6px;flex-basis:100%"><span class="danger grow">${(s.seats||[]).length?'Записи отменятся, родителям придёт уведомление.':'Удалить окно?'}</span><button class="btn warnb sm" data-a="slDelYes" data-v="${s.id}">Удалить</button><button class="btn ghost sm" data-a="slDelNo">Нет</button></div>`:`<button class="btn ghost sm" data-a="slDel" data-v="${s.id}">Удалить</button>`}</div>`).join('')}</div>`:'<div class="muted">Свободных окон нет.</div>'}</div>`}
+  return `${S.slEdit?slotForm():'<button class="btn ghost" data-a="slNew">Добавить окно</button>'}
+  <div class="card" style="gap:14px">${WEEK.map(([dw,dt],i)=>{const ss=SLOTS.filter(s=>s.d===i);if(!ss.length)return '';
+    return `<div class="day"><div class="date"><b>${dt.slice(0,2)}</b><span>${dw}</span></div><div class="ev">${ss.map(s=>{const ks=(s.seats||[]).map(kidById).filter(Boolean);
+      const del=S.slDel===s.id?`<div style="flex-basis:100%;display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="danger">${ks.length?'Записи будут отменены, родителям придёт уведомление.':'Удалить окно?'}</span><button class="btn warnb sm" data-a="slDelYes" data-v="${s.id}">Удалить</button><button class="btn ghost sm" data-a="slDelNo">Нет</button></div>`:`<button class="btn ghost sm" data-a="slDel" data-v="${s.id}" aria-label="Удалить окно">✕</button>`;
+      return `<div class="ev-i" style="flex-wrap:wrap"><span class="time">${esc(s.t)}</span><div class="grow"><b>${esc(s.k)}</b><div class="muted">${slotLine(s)}</div>${ks.length?`<div class="row" style="gap:4px;flex-wrap:wrap;margin-top:4px">${ks.map(k=>`<span class="pill">${esc(short(k.name))} <button class="btn ghost sm" style="padding:0 6px;min-height:0" data-a="unseat" data-v="${s.id}|${k.id}" aria-label="Снять запись">✕</button></span>`).join('')}</div>`:''}</div><span class="pill ${seatsLeft(s)?'':'ok'}">${(s.seats||[]).length}/${s.cap||1}</span>${(s.wait||[]).length?`<span class="pill warn">ждут: ${s.wait.length}</span>`:''}${del}</div>`}).join('')}</div></div>`}).join('')||'<div class="muted">Окон пока нет.</div>'}</div>`}
+
+/* ===================== ЧАТ ===================== */
+function chat(){
+  const th=threadsFor();
+  if(!S.thread){
+    const pick=isStaff()&&!isTop()?`<div class="card"><label class="field">Написать семье<select class="in" id="newChat"><option value="">Выберите хоккеиста…</option>${myGroups().flatMap(g=>KIDS.filter(k=>k.g===g)).map(k=>`<option value="${k.id}">${esc(short(k.name))} · ${k.g}</option>`).join('')}</select></label></div>`
+      :isTop()?`<div class="card"><label class="field">Написать семье от ${S.role==='owner'?'собственника':'руководителя'}<select class="in" id="newChat"><option value="">Выберите хоккеиста…</option>${KIDS.map(k=>`<option value="${k.id}">${esc(short(k.name))} · ${k.g}</option>`).join('')}</select></label><div class="muted">Вам видны все чаты школы. Писать можно в чатах с руководителем, остальные только для просмотра.</div></div>`:'';
+    return `<h2>${S.role==='parent'?'Чат со школой':'Чаты с родителями'}</h2>${pick}
+    <div class="card"><div class="list">${th.length?th.map(([key,title,sub])=>{const ms=MSGS.filter(m=>m.th===key),last=ms[ms.length-1],un=unreadIn(key);
+      return `<button class="item" style="border-left:0;border-right:0;border-bottom:0;background:none;text-align:left;width:100%" data-a="thread" data-v="${key}"><div class="grow"><div class="t">${esc(title)}${!canWrite(key)?' <span class="pill">просмотр</span>':''}</div><div class="muted">${esc(sub)}</div>${last?`<div class="muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(last.t)}</div>`:''}</div>${un?`<span class="badge">${un}</span>`:''}</button>`}).join(''):'<div class="muted">Пока нет переписки.</div>'}</div></div>`}
+  const t=th.find(x=>x[0]===S.thread)||[S.thread,'Чат',''];const msgs=MSGS.filter(m=>m.th===S.thread);
+  setTimeout(()=>{if(msgs.length)markSeen('th:'+S.thread,msgs[msgs.length-1].ts);header()},0);
+  const ch=S.thread.split(':')[1];
+  return `<button class="back" data-a="back">‹ Все чаты</button>
+  <div><h2>${esc(t[1])}</h2><div class="muted">${esc(t[2])}</div></div>
+  ${S.role==='parent'&&ch!=='director'?'<div class="note">Переписку также видит руководитель школы.</div>':''}
+  <div class="bubbles">${msgs.map(m=>`<div class="bub ${isMine(m)?'me':''}">${isMine(m)?'':`<span class="who-lbl">${esc(m.from==='parent'?m.name:short(m.name)+' · '+ROLE_LBL[m.from])}</span>`}${esc(m.t)}<small>${esc(m.tm)}</small></div>`).join('')||'<div class="muted">Сообщений пока нет. Напишите первым.</div>'}</div>
+  ${canWrite(S.thread)?`<form class="composer" id="sendForm"><input type="text" id="msg" placeholder="Сообщение" autocomplete="off"><button class="btn red" type="submit">Отправить</button></form>`:'<div class="ro">Только просмотр: этот чат ведёт '+(ch==='coach'?'тренер':'администратор')+'.</div>'}`}
+
+/* ===================== МАТЕРИАЛЫ ===================== */
+function vForm(v){const x=v||{cat:CATS()[0],g:'all',title:'',url:'',tips:[]};const gs=S.role==='coach'?myGroups():GROUPS();
+  return `<form id="vForm" class="card form" data-id="${v?v.id:''}"><div class="t">${v?'Изменить материал':'Новый материал'}</div>
+  <div class="grid2"><label class="field">Тип<select class="in" id="vCat">${CATS().map(c=>`<option ${c===x.cat?'selected':''}>${esc(c)}</option>`).join('')}</select></label>
+  <label class="field">Для кого<select class="in" id="vG"><option value="all">Все группы</option>${gs.map(g=>`<option value="${g}" ${g===x.g?'selected':''}>Группа ${esc(g)}</option>`).join('')}</select></label></div>
+  <label class="field">Название<input type="text" id="vTitle" value="${esc(x.title)}" required placeholder="Например: Как шнуровать коньки"></label>
+  <label class="field">Ссылка на видео<input type="url" id="vUrl" value="${esc(x.url)}" placeholder="https://vkvideo.ru/… или rutube.ru/…"></label>
+  <div class="muted">Загрузите видео в VK Видео, Rutube или YouTube (можно с доступом по ссылке) и вставьте ссылку сюда.</div>
+  <label class="field">Описание или советы — каждый с новой строки<textarea id="vText">${esc((x.tips||[]).join('\n'))}</textarea></label>
+  <div class="row"><button class="btn red grow" type="submit">${v?'Сохранить':'Опубликовать'}</button><button class="btn ghost" type="button" data-a="vCancel">Отмена</button></div></form>`}
+function catEditor(){return `<div class="card form"><div class="t">Типы материалов</div>
+  ${CATS().map((c,i)=>`<div class="row"><input type="text" class="grow" id="cat${i}" value="${esc(c)}" aria-label="Название типа"><button class="btn ghost sm" data-a="catDel" data-v="${i}" ${CATS().length<2?'disabled':''}>Удалить</button></div>`).join('')}
+  <div class="row"><input type="text" class="grow" id="catNew" placeholder="Новый тип, например «Питание»"><button class="btn ghost sm" data-a="catAdd">Добавить</button></div>
+  <div class="muted">При удалении типа его материалы перейдут в первый тип списка.</div>
+  <div class="row"><button class="btn red grow" data-a="catSave">Сохранить названия</button><button class="btn ghost" data-a="catClose">Закрыть</button></div></div>`}
+function postForm(){const t=S.postType;const gs=GROUPS();
+  return `<form id="postForm" class="card form"><div class="t">Новое объявление</div>
+  <div class="chips">${[['promo','Акция'],['news','Новость'],['tour','Турнир']].map(([v,l])=>`<button type="button" class="chip" data-a="postType" data-v="${v}" aria-pressed="${t===v}">${l}</button>`).join('')}</div>
+  <label class="field">Кому<select class="in" id="pG">${t==='tour'?'':'<option value="all">Все группы</option>'}${gs.map(g=>`<option value="${g}">Группа ${esc(g)}</option>`).join('')}</select></label>
+  <label class="field">Заголовок<input type="text" id="pTitle" required placeholder="${t==='tour'?'Турнир «…»':'Коротко о главном'}"></label>
+  ${t==='tour'?`<div class="grid2"><label class="field">Даты<input type="text" id="tDates" placeholder="24–25 октября"></label><label class="field">Ответить до<input type="date" id="tDeadline"></label></div>
+  <label class="field">Место<input type="text" id="tPlace" placeholder="Город, арена"></label><label class="field">Сбор<input type="text" id="tMeet" placeholder="24.10 в 8:00 у арены"></label>`:`<label class="field">Текст<textarea id="pText"></textarea></label>`}
+  <div class="row"><button class="btn red grow" type="submit">Опубликовать и уведомить</button><button class="btn ghost" type="button" data-a="postCancel">Отмена</button></div></form>`}
+function media(){
+  const cats=['Все',...CATS()];if(!cats.includes(S.cat))S.cat='Все';
+  const vids=VIDEOS.filter(v=>(S.role==='parent'?(v.g==='all'||(ME&&v.g===ME.g)):visibleGroup(v.g))&&(S.cat==='Все'||v.cat===S.cat));
+  const tools=canMaterials()?(S.vEdit==='new'?vForm(null):S.catEdit?catEditor():`<div class="row"><button class="btn ghost grow" data-a="vNew">Добавить материал</button><button class="btn ghost" data-a="catEdit">Типы</button></div>`):'';
+  const ann=canManage()?`<h3>Объявления для родителей</h3>${S.postType?postForm():'<button class="btn ghost" data-a="postNew">Новое объявление: акция, новость, турнир</button>'}
+    <div class="card"><div class="list">${POSTS.map(x=>`<div class="item"><div class="grow"><span class="pill ${x.type==='promo'?'bad':'ice'}">${x.type==='promo'?'Акция':'Новость'} · ${x.g==='all'?'все':x.g}</span><div class="t" style="margin-top:4px">${esc(x.title)}</div><div class="muted">${esc(x.text)}</div></div><button class="btn ghost sm" data-a="delPost" data-v="${x.id}" aria-label="Убрать">✕</button></div>`).join('')}
+    ${TOURS.map(x=>`<div class="item"><div class="grow"><span class="pill" style="background:var(--gold);color:var(--gold-ink)">Турнир · ${x.g}</span><div class="t" style="margin-top:4px">${esc(x.title)}</div><div class="muted">${esc(x.dates)} · ${esc(x.place)}</div></div><button class="btn ghost sm" data-a="delTour" data-v="${x.id}" aria-label="Убрать">✕</button></div>`).join('')}
+    ${!POSTS.length&&!TOURS.length?'<div class="muted">Объявлений нет.</div>':''}</div></div>`:'';
+  return `<h2>${isStaff()?'Материалы':'Полезное от школы'}</h2>${tools}
+  <div class="chips">${cats.map(c=>`<button class="chip" data-a="cat" data-v="${esc(c)}" aria-pressed="${S.cat===c}">${esc(c)}</button>`).join('')}</div>
+  ${vids.map(v=>S.vEdit===v.id?vForm(v):`<div class="card">
+    ${v.url?`<a class="thumb" href="${esc(v.url)}" target="_blank" rel="noopener" aria-label="Смотреть: ${esc(v.title)}"><span class="pill cat">${esc(v.cat)}</span><span class="play"></span><span class="dur">смотреть</span></a>`
+      :`<button class="thumb" style="border:0;width:100%" data-a="openVid" data-v="${v.id}" aria-label="Открыть: ${esc(v.title)}"><span class="pill cat">${esc(v.cat)}</span><span class="play"></span><span class="dur">видео скоро</span></button>`}
+    <div class="row"><div class="grow"><div class="t">${esc(v.title)}</div>${v.g!=='all'?`<div class="muted">Для группы ${v.g}</div>`:''}</div><button class="btn ghost sm" data-a="openVid" data-v="${v.id}">${S.open===v.id?'Свернуть':'Подробнее'}</button></div>
+    ${S.open===v.id?`<ol class="tips">${(v.tips||[]).map(t=>`<li>${esc(t)}</li>`).join('')}</ol>`:''}
+    ${canMaterials()?(S.vDel===v.id?`<div class="row"><span class="danger grow">Удалить материал?</span><button class="btn warnb sm" data-a="vDelYes" data-v="${v.id}">Удалить</button><button class="btn ghost sm" data-a="vDelNo">Нет</button></div>`
+      :`<div class="row" style="gap:6px"><button class="btn ghost sm" data-a="vEdit" data-v="${v.id}">Изменить</button><button class="btn ghost sm" data-a="vDel" data-v="${v.id}">Удалить</button></div>`):''}
+  </div>`).join('')||'<div class="card muted">В этом разделе пока нет материалов.</div>'}
+  ${ann}`}
+
+/* ===================== СОТРУДНИКИ ===================== */
+function report(){const kids=KIDS.filter(k=>visibleGroup(k.g));
+  const paid=kids.reduce((a,k)=>a+(k.pays||[]).filter(x=>String(x.d).endsWith('.'+pad(TODAY_D.getMonth()+1))).reduce((b,x)=>b+x.s,0),0);
+  const debt=kids.reduce((a,k)=>a+(k.debt||0),0);
+  const byG=GROUPS().map(g=>{const ks=KIDS.filter(k=>k.g===g);let p=0,t=0;ks.forEach(k=>{const [a,b]=attStats(k);p+=a;t+=b});return [g,t?Math.round(p/t*100):0,ks.length]});
+  const coaches=COACHES().map(c=>{const ss=SLOTS.filter(s=>s.c===c.id);return [c.name,ss.reduce((a,s)=>a+(s.seats||[]).length,0),ss.reduce((a,s)=>a+(s.cap||1),0)]});
+  const exp=kids.flatMap(k=>medStatus(k).filter(m=>m.left<=30).map(m=>[k,m]));
+  return `<h3>Отчёт за месяц</h3>
+  <div class="card"><div class="row" style="flex-wrap:wrap;gap:16px"><div class="grow"><div class="muted">Подтверждено оплат</div><div class="big">${rub(paid)}</div></div><div class="grow"><div class="muted">Долг родителей</div><div class="big" style="color:var(--alarm)">${rub(debt)}</div></div></div></div>
+  <div class="card"><div class="t">Посещаемость по группам</div>${byG.map(([g,pc,n])=>`<div class="row"><span style="width:44px" class="num">${g}</span><div class="bar"><i style="width:${pc}%"></i></div><b class="num" style="width:44px;text-align:right">${n?pc+'%':'—'}</b><span class="muted" style="width:52px;text-align:right">${n} чел.</span></div>`).join('')}
+  <div class="muted">Без учёта пропусков по болезни.</div></div>
+  <div class="card"><div class="t">Загрузка тренеров, индивидуальные (занято мест / всего)</div>${coaches.map(([c,b,t])=>`<div class="row"><span class="grow">${esc(short(c))}</span><div class="bar"><i style="width:${t?Math.round(b/t*100):0}%"></i></div><b class="num">${b}/${t}</b></div>`).join('')}</div>
+  ${exp.length?`<div class="card alert"><div class="t">Документы истекают или не сданы</div><div class="list">${exp.map(([k,m])=>`<button class="item" style="border-left:0;border-right:0;border-bottom:0;background:none;text-align:left;width:100%" data-a="openKid" data-v="${k.id}"><div class="grow"><div class="t">${esc(short(k.name))} · ${k.g}</div><div class="muted">${m.n}${m.d?' до '+m.d:' не сдана'}</div></div>${m.pill}</button>`).join('')}</div></div>`:''}`}
+function payReqBlock(){if(!PAYREQ.length)return '';
+  return `<h3>Оплаты на проверке</h3><div class="card"><div class="list">${PAYREQ.map(p=>{const k=kidById(p.kid);return `<div class="item" style="flex-wrap:wrap"><div class="grow"><div class="t">${esc(k?short(k.name):'—')} · ${rub(p.sum)}</div><div class="muted">${esc(p.by)} · ${esc(p.d)}</div></div>
+    ${p.fid?`<button class="btn ghost sm" data-a="openFile" data-v="${p.fid}">Чек</button>`:'<span class="pill">без чека</span>'}
+    <div class="row" style="flex-basis:100%;gap:6px"><button class="btn red sm grow" data-a="payOk" data-v="${p.id}">Подтвердить</button><button class="btn ghost sm" data-a="payNo" data-v="${p.id}">Отклонить</button></div></div>`}).join('')}</div>
+    <div class="muted">Проверьте поступление на счёт и подтвердите — долг родителя уменьшится, ему придёт уведомление.</div></div>`}
+function sHome(){
+  const todayEv=EVENTS.filter(e=>e.d===TIDX&&e.type!=='mass'&&visibleGroup(e.g)).sort(byTime);
+  const absList=Object.entries(ABS()).filter(([,r])=>r).map(([key,r])=>{const [id,dt]=key.split('|');return [kidById(id),dt,r]}).filter(([k,dt])=>k&&visibleGroup(k.g)&&WEEK.some(w=>w[1]===dt));
+  const u=unreadChats();
+  const tours=TOURS.filter(t=>visibleGroup(t.g)).map(t=>{const ks=KIDS.filter(k=>k.g===t.g),ans=t.ans||{},y=ks.filter(k=>ans[k.id]==='yes'),n=ks.filter(k=>ans[k.id]==='no'),q=ks.filter(k=>!ans[k.id]);
+    return `<div class="card tour"><div class="t">${esc(t.title)} · ${t.g}</div><div class="muted">${esc(t.dates)} · ответ до ${esc(t.deadline)}</div>
+    <div class="row" style="gap:6px;flex-wrap:wrap"><span class="pill ok">Едут: ${y.length}</span><span class="pill">Нет: ${n.length}</span><span class="pill warn">Не ответили: ${q.length}</span></div>
+    ${q.length?`<div class="muted">Не ответили: ${q.map(k=>esc(short(k.name))).join(', ')}</div><button class="btn ghost sm" data-a="remind" data-v="${t.id}">Напомнить родителям</button>`:''}</div>`}).join('');
+  const att=(S.role==='coach'||S.role==='owner')?todayEv.map(e=>{const kids=KIDS.filter(k=>k.g===e.g),marked=kids.filter(k=>(k.att||[]).find(a=>a.d===TODAY)).length;
+    return `<div class="card"><div class="t">${esc(gl(e.g))} · ${TYPES[e.type]} ${esc(evTime(e))}</div><div class="muted">${esc(e.place||PLACE[e.type])} · отмечено ${marked} из ${kids.length}</div>
+    <div class="list">${kids.map(k=>{const a=(k.att||[]).find(x=>x.d===TODAY),s=a?a.s:'',ab=ABS()[k.id+'|'+TODAY];
+      return `<div class="item" style="flex-wrap:wrap"><div class="grow"><div class="t">${esc(short(k.name))}</div><div class="muted">№${esc(k.num??'')} · ${esc(k.pos)}</div>${ab?`<span class="pill warn">предупредили: ${esc(ab)}</span>`:''}</div>
+      <div class="row" style="gap:4px">${[['+','Был','p'],['-','Пропуск','m'],['б','Болеет','s']].map(([v,l,c])=>`<button class="markbtn ${s===v?c:''}" data-a="mark" data-v="${k.id}|${v}" aria-pressed="${s===v}">${l}</button>`).join('')}</div></div>`}).join('')||'<div class="muted">В группе пока нет хоккеистов.</div>'}</div></div>`}).join(''):'';
+  const debtors=canManage()?KIDS.filter(k=>k.debt>0):[];
+  return `<h2>${DOWFULL[TIDX]}, ${TODAY_D.getDate()} ${MON_GEN[TODAY_D.getMonth()]}</h2>
+  ${u?`<button class="card" style="text-align:left" data-a="tab" data-v="chat"><div class="row"><div class="grow"><div class="t">Новые сообщения от родителей</div><div class="muted">Ответьте в разделе «Чаты»</div></div><span class="badge">${u}</span></div></button>`:''}
+  ${canManage()?`<button class="card" style="text-align:left" data-a="tab" data-v="school"><div class="row"><div class="grow"><div class="t">Школа</div><div class="muted">${isTop()?'Журнал изменений, реквизиты, сотрудники, тренеры'+((META.log.list||[]).length?' · записей: '+META.log.list.length:''):'Группы, реквизиты (вносит руководитель)'}</div></div><span>›</span></div></button>`:''}
+  ${canManage()?payReqBlock():''}
+  ${absList.length?`<div class="card alert"><div class="t">Предупредили об отсутствии</div><div class="list">${absList.map(([k,dt,r])=>`<div class="item"><div class="grow">${esc(short(k.name))} · ${k.g}<div class="muted">${dt} · ${esc(r)}</div></div></div>`).join('')}</div></div>`:''}
+  ${S.role==='coach'?`<h3>Посещаемость сегодня</h3>${att||'<div class="card muted">Сегодня у ваших групп нет тренировок.</div>'}<div class="muted">«Болеет» не считается пропуском.</div>`:report()+(S.role==='owner'&&att?'<h3>Посещаемость сегодня</h3>'+att:'')}
+  ${tours?'<h3>Турниры</h3>'+tours:''}
+  ${debtors.length?`<h3>Должники</h3><div class="card"><div class="list">${debtors.map(k=>`<button class="item" style="border-left:0;border-right:0;border-bottom:0;background:none;text-align:left;width:100%" data-a="openKid" data-v="${k.id}"><div class="grow"><div class="t">${esc(short(k.name))}</div><div class="muted">${esc(gl(k.g))} · ${esc((k.parents[0]||{}).p)}</div></div><b class="num">${rub(k.debt)}</b></button>`).join('')}</div></div>`:''}`}
+function sGroups(){
+  if(S.draft&&S.draft.mode==='new')return `<button class="back" data-a="cancelDraft">‹ Группы</button>${draftForm()}`;
+  if(S.kid){const k=kidById(S.kid);if(k)return kidCard(k);S.kid=null}
+  const gs=myGroups();if(!S.group||!gs.includes(S.group))S.group=gs[0];
+  const kids=KIDS.filter(k=>k.g===S.group);
+  return `<h2>Группы</h2><div class="chips">${gs.map(g=>`<button class="chip" data-a="group" data-v="${g}" aria-pressed="${S.group===g}">${g} · ${KIDS.filter(k=>k.g===g).length}</button>`).join('')}</div>
+  ${canManage()?'<button class="btn ghost" data-a="kidNew">Добавить хоккеиста</button>':''}
+  <div class="card"><div class="list">${kids.map(k=>{const [p,t]=attStats(k);const docWarn=medStatus(k).some(m=>m.left<=30);return `<button class="item" style="border-left:0;border-right:0;border-bottom:0;background:none;text-align:left;width:100%" data-a="openKid" data-v="${k.id}"><div class="jersey" style="width:40px;height:44px;font-size:17px;border-radius:9px 9px 12px 12px">${esc(k.num??'')}</div><div class="grow"><div class="t">${esc(k.name)}</div><div class="muted">${esc(k.pos)} · посещ. ${p}/${t}${docWarn?' · <span style="color:var(--warn)">документы</span>':''}</div></div>${k.debt?`<span class="pill bad num">${rub(k.debt)}</span>`:'<span class="pill ok">0 ₽</span>'}</button>`}).join('')||'<div class="muted">В этой группе пока нет хоккеистов.</div>'}</div></div>
+  ${S.role==='coach'?'<div class="note">Вам видны ваши группы. Их назначает руководитель школы. Долги, оплаты и документы семей вы видите только для просмотра.</div>':''}`}
+function kidCard(k){const [p,t]=attStats(k);
+  if(S.draft&&S.draft.mode==='edit'&&S.draft.id===k.id)return `<button class="back" data-a="cancelDraft">‹ Карточка</button>${draftForm()}`;
+  const ro=S.role==='coach';
+  const svc=[[`Абонемент, ${MON_NOM[TODAY_D.getMonth()]}`,groupPrice(k.g),'ano'],...SERVICES.map(x=>[x.n,x.p,x.pay])];
+  const fin=`<div class="card"><div class="row"><div class="grow"><div class="muted">Задолженность</div><div class="big" style="color:${k.debt?'var(--alarm)':'var(--ok)'}">${rub(k.debt)}</div></div>${k.debt?`<span class="pill ${TODAY_D.getDate()>DUE_DAY?'bad':'warn'}">${TODAY_D.getDate()>DUE_DAY?'просрочено':'до '+dueDate()}</span>`:''}</div>
+  ${k.items.length?`<div class="list">${k.items.map(i=>`<div class="item"><div class="grow">${esc(i.t)}<div class="muted">начислено ${esc(i.d)} · ${esc(payeeById(i.pay||'ano').title)}</div></div><b class="num">${rub(i.s)}</b></div>`).join('')}</div>`:''}
+  ${(k.pays||[]).length?`<div class="t">Оплаты</div><div class="list">${k.pays.map(x=>`<div class="item"><div class="grow">${esc(x.t)}<div class="muted">${esc(x.d)}${x.rc?' · квитанция №'+esc(x.rc):''}${x.pay?' · '+esc(payeeById(x.pay).title):''}</div></div><b class="num">${rub(x.s)}</b></div>`).join('')}</div>`:''}
+  ${ro?'<div class="muted">Только просмотр. Начисления и оплаты вносит администратор.</div>':`<form id="debtForm" class="form" data-kid="${k.id}" style="border-top:1px solid var(--line);padding-top:10px">
+    <label class="field">Услуга<select class="in" id="dsvc"><option value="">Другое — впишите ниже</option>${svc.map(([n,p,pay],i)=>`<option value="${i}" data-n="${esc(n)}" data-p="${p}" data-pay="${pay}">${esc(n)} — ${rub(p)}</option>`).join('')}</select></label>
+    <div class="grid2"><input type="number" id="dsum" min="1" placeholder="Сумма, ₽" required aria-label="Сумма"><select class="in" id="dkind" aria-label="Операция"><option value="add">Начислить</option><option value="pay">Оплата наличными</option></select></div>
+    <input type="text" id="dtext" placeholder="За что: абонемент, турнир, форма…" aria-label="За что">
+    <label class="field">Получатель<select class="in" id="dpay">${PAYEES().map(pe=>`<option value="${pe.id}">${esc(pe.title)}</option>`).join('')}</select></label>
+    <button class="btn red" type="submit">Сохранить и уведомить родителя</button></form>`}</div>`;
+  return `<button class="back" data-a="closeKid">‹ Группа ${esc(gl(k.g))}</button>
+  ${kidHead(k)}
+  <div class="card"><dl class="kv"><dt>Группа</dt><dd>${esc(gl(k.g))}</dd><dt>Амплуа</dt><dd>${esc(k.pos)}</dd>${k.parents.concat(k.rel||[]).map(c=>`<dt>${esc(c.r)}</dt><dd>${esc(c.n)}<br><span class="num">${esc(c.p)}</span></dd>`).join('')}</dl>
+  ${canManage()?`<div class="row" style="gap:6px;flex-wrap:wrap"><button class="btn ghost sm" data-a="kidEdit" data-v="${k.id}">Изменить карточку</button>${S.kidDel===k.id?`<span class="danger">Исключить из школы? Данные удалятся.</span><button class="btn warnb sm" data-a="kidDelYes" data-v="${k.id}">Исключить</button><button class="btn ghost sm" data-a="kidDelNo">Нет</button>`:`<button class="btn ghost sm danger" data-a="kidDel" data-v="${k.id}">Исключить</button>`}</div>`:''}</div>
+  ${fin}<h3>Справка и страховка</h3>${medBlock(k,canManage())}
+  <h3>Прогресс</h3>${progBlock(k,S.role==='coach'||isTop())}
+  <h3>Размеры экипировки</h3>${sizesBlock(k,false)}
+  <div class="card"><div class="t">Посещаемость, октябрь</div><div class="att">${(k.att||[]).map(attCell).join('')||'<div class="muted">Отметок пока нет.</div>'}</div>${attLegend}</div>
+  ${docsBlock(k,S.role==='coach')}`}
+function school(){const dir=isTop();
+  const req=dir?PAYEES().map(pe=>`<form class="card form payeeForm" data-id="${pe.id}"><div class="t">Получатель: ${esc(pe.title)}</div>
+    <label class="field">За что платят этому получателю<input type="text" id="pe_${pe.id}_title" value="${esc(pe.title)}"></label>
+    ${PAYEE_FIELDS.map(([f,l])=>`<label class="field">${l}<input type="text" id="pe_${pe.id}_${f}" value="${esc(pe[f])}" ${f==='purpose'?'placeholder="Оплата за {ФИО ребёнка}"':''}></label>`).join('')}
+    <div class="muted">В назначении платежа {ФИО ребёнка} заменится на имя ребёнка автоматически.</div>
+    <button class="btn red" type="submit">Сохранить реквизиты</button></form>`).join('')
+    :PAYEES().map(pe=>payeeBlock(pe,null,null)).join('')+'<div class="muted">Реквизиты вносит и меняет только руководитель школы.</div>';
+  const staff=dir?`<form id="staffForm" class="card form"><div class="t">Администрация</div>
+    ${ADMINS().map((a,i)=>`<label class="field">Администратор ${i+1}<input type="text" id="adm${i}" value="${esc(a)}"></label>`).join('')}
+    <label class="field">Руководитель школы<input type="text" id="dirName" value="${esc(DIRECTOR())}"></label>
+    <label class="field">Собственник<input type="text" id="ownName" value="${esc(META.staff.owner||'')}" placeholder="ФИО собственника"></label>
+    <button class="btn red" type="submit">Сохранить</button></form>`
+    :`<div class="card"><div class="t">Администрация</div><dl class="kv">${ADMINS().map(a=>`<dt>Администратор</dt><dd>${esc(a)}</dd>`).join('')}<dt>Руководитель</dt><dd>${esc(DIRECTOR())}</dd></dl></div>`;
+  const log=dir?`<div class="card"><div class="t">Журнал изменений расписания</div><div class="list">${(META.log.list||[]).map(x=>`<div class="item"><div class="grow"><div class="t">${esc(x.t)}</div><div class="muted">${esc(x.who)} · ${esc(x.role)} · ${esc(x.d)}</div></div></div>`).join('')||'<div class="muted">Изменений от сотрудников пока не было.</div>'}</div><div class="muted">Сюда попадают изменения и удаления в расписании, сделанные не вами.</div></div>`:'';
+  const groups=`<div class="card form"><div class="t">Группы</div>
+    <div class="list">${GROUPS().map(g=>{const n=KIDS.filter(k=>k.g===g).length,c=COACHES().filter(c=>c.groups.includes(g)).map(c=>short(c.name)).join(', ');return `<div class="item"><div class="grow"><div class="t">${esc(gl(g))}</div><div class="muted">${n} чел. · тренер: ${esc(c)||'не назначен'}</div></div>${n?'':`<button class="btn ghost sm" data-a="grDel" data-v="${g}">Удалить</button>`}</div>`}).join('')}</div>
+    <div class="row"><input type="text" class="grow" id="grNew" placeholder="Например: 2022 или 2022–2023"><button class="btn ghost sm" data-a="grAdd">Добавить группу</button></div></div>`;
+  const coaches=dir?`<div class="card form"><div class="row"><div class="t grow">Тренеры и их группы</div><span class="pill">${COACHES().length} из ${MAX_COACHES}</span></div>
+    ${COACHES().map((c,i)=>`<div class="cedit"><label class="field">ФИО<input type="text" id="coN${i}" value="${esc(c.name)}"></label>
+      <div class="grid2"><label class="field">Телефон<input type="tel" id="coP${i}" value="${esc(c.phone||'')}" placeholder="+7 900 000-00-00"></label><label class="field">Электронная почта<input type="email" id="coE${i}" value="${esc(c.email||'')}" placeholder="name@mail.ru"></label></div>
+      <label class="row" style="gap:6px;font-size:14px"><input type="checkbox" id="coA${i}" ${c.asst?'checked':''}> помощник тренера</label>
+      <div class="chk">${GROUPS().map(g=>`<label><input type="checkbox" data-coach="${i}" value="${g}" ${c.groups.includes(g)?'checked':''}>${g}</label>`).join('')}</div>
+      <button class="btn ghost sm" data-a="coDel" data-v="${i}" ${SLOTS.some(s=>s.c===c.id)||COACHES().length<2?'disabled':''}>Удалить тренера</button></div>`).join('')}
+    ${COACHES().length<MAX_COACHES?`<div class="cedit"><div class="t">Новый тренер</div><input type="text" id="coNew" placeholder="ФИО"><div class="grid2"><input type="tel" id="coNewP" placeholder="Телефон"><input type="email" id="coNewE" placeholder="Электронная почта"></div><button class="btn ghost sm" data-a="coAdd">Добавить тренера</button></div>`:`<div class="note">Добавлено максимальное число тренеров: ${MAX_COACHES}.</div>`}
+    <button class="btn red" data-a="coSave">Сохранить тренеров</button><div class="muted">Тренер видит только отмеченные группы. Помощника отметьте галочкой и назначьте ему ту же группу. Тренера с окнами для индивидуальных сначала освободите от окон.</div></div>`
+    :`<div class="card"><div class="t">Тренеры</div><div class="list">${COACHES().map(c=>`<div class="item"><div class="grow"><div class="t">${esc(c.name)}${c.asst?' <span class="pill">помощник</span>':''}</div><div class="muted">${esc(c.phone||'телефон не указан')} · ${esc(c.email||'почта не указана')}</div><div class="muted">Группы: ${esc(c.groups.join(', ')||'—')}</div></div></div>`).join('')}</div><div class="muted">Назначает руководитель школы.</div></div>`;
+  return `<button class="back" data-a="tab" data-v="home">‹ Сегодня</button><h2>Школа</h2>${log}<h3>Реквизиты для оплаты</h3>${req}<h3>Сотрудники</h3>${staff}${groups}${coaches}`}
+
+/* ===================== ДЕЙСТВИЯ ===================== */
+function copy(text,ok){const fail=()=>{S.sheet='copy';S.copyText=text;render()};
+  try{navigator.clipboard.writeText(text).then(()=>{toast(ok);render()},fail)}catch(e){fail()}}
+const slotTitle=s=>`${WEEK[s.d][0]}, ${WEEK[s.d][1]} в ${s.t}`;
+function chargeSlot(k,s){k.items.push({d:TODAY,t:`Индивидуальная, ${WEEK[s.d][0]} ${WEEK[s.d][1]} ${s.t}`,s:indPrice(s.cap),slot:s.id,pay:'ano'});k.debt=sumItems(k)}
+function dropSeat(s,kid,why){s.seats=(s.seats||[]).filter(x=>x!==kid);const k=kidById(kid);
+  if(k){const i=k.items.findIndex(x=>x.slot===s.id);if(i>-1){k.items.splice(i,1);k.debt=sumItems(k)}if(why)notify({aud:'parent',kid:k.id,t:why})}}
+function fillFromWait(s){s.seats=s.seats||[];while(seatsLeft(s)>0&&(s.wait||[]).length){const nx=s.wait.shift(),nk=kidById(nx);if(!nk||s.seats.includes(nx))continue;
+  s.seats.push(nx);chargeSlot(nk,s);
+  notify({aud:'parent',kid:nx,t:`Освободилось место: вы записаны на индивидуальную ${slotTitle(s)}`});
+  notify({aud:'staff',roles:['coach','admin'],coach:s.c,t:`${short(nk.name)} записан из листа ожидания: ${slotTitle(s)}`})}}
+function closeItems(k,sum,pay){let left=sum;const its=k.items.filter(i=>(i.pay||'ano')===pay);
+  for(const it of its){if(left<=0)break;if(it.s<=left){left-=it.s;k.items.splice(k.items.indexOf(it),1)}else{it.s-=left;left=0}}
+  k.debt=sumItems(k)}
+document.addEventListener('click',async e=>{
+  const b=e.target.closest('[data-a]');if(!b)return;if(b.dataset.self&&e.target!==b)return;
+  const a=b.dataset.a,v=b.dataset.v;
+  if(b.tagName==='A')return;
+  switch(a){
+  case 'tab':S.tab=v;S.thread=null;S.kid=null;S.draft=null;S.editSizes=false;S.editMed=false;S.evEdit=null;S.slEdit=false;S.vEdit=null;S.postType=null;S.catEdit=false;break;
+  case 'notif':S.sheet='notif';break;
+  case 'closeSheet':S.sheet=null;break;
+  case 'seg':S.seg=v;S.evEdit=null;S.evDel=null;S.slEdit=false;break;
+  case 'goInd':S.tab='sched';S.seg='ind';break;
+  case 'goMed':S.tab='profile';S.editMed=true;render();document.getElementById('medH')?.scrollIntoView();return;
+  case 'pick':S.sel=S.sel.includes(v)?S.sel.filter(x=>x!==v):[...S.sel,v];break;
+  case 'pickClear':S.sel=[];break;
+  case 'bookSel':{let n=0,sum=0;S.sel.forEach(id=>{const s=SLOTS.find(x=>x.id===id);if(!s||(s.seats||[]).includes(ME.id)||seatsLeft(s)<=0)return;
+      s.seats=[...(s.seats||[]),ME.id];chargeSlot(ME,s);n++;sum+=indPrice(s.cap);
+      notify({aud:'staff',roles:['coach','admin'],coach:s.c,t:`${short(ME.name)} записан на индивидуальную ${slotTitle(s)}`})});
+    S.sel=[];toast(n?`Записали на ${n} ${n===1?'тренировку':n<5?'тренировки':'тренировок'}. ${rub(sum)} добавлено к оплате`:'Эти окна уже заняли, выберите другие');break}
+  case 'unbook':{const s=SLOTS.find(x=>x.id===v);if(!s)break;if(!canCancel(s)){toast('До тренировки меньше 24 часов. Отменить может только администратор');break}
+    dropSeat(s,ME.id);fillFromWait(s);notify({aud:'staff',roles:['coach','admin'],coach:s.c,t:`${short(ME.name)} отменил индивидуальную ${slotTitle(s)}`});toast('Запись отменена, начисление снято');break}
+  case 'wait':{const s=SLOTS.find(x=>x.id===v);if(s&&!(s.wait||[]).includes(ME.id))s.wait=[...(s.wait||[]),ME.id];toast('Вы в листе ожидания. Если место освободится, мы запишем вас автоматически');break}
+  case 'unwait':{const s=SLOTS.find(x=>x.id===v);if(s)s.wait=(s.wait||[]).filter(x=>x!==ME.id);break}
+  case 'unseat':{const [sid,kid]=v.split('|'),s=SLOTS.find(x=>x.id===sid);if(s){dropSeat(s,kid,`Запись на индивидуальную ${slotTitle(s)} отменена администратором`);fillFromWait(s)}toast('Запись отменена');break}
+  case 'absAsk':S.absAsk=v||null;break;
+  case 'abs':{const [dt,r]=v.split('|');ABS()[ME.id+'|'+dt]=r;S.absAsk=null;notify({aud:'staff',roles:['coach','admin'],g:ME.g,t:`${short(ME.name)} не придёт ${dt}: ${r}`});toast('Тренер предупреждён');break}
+  case 'absUndo':ABS()[ME.id+'|'+v]=null;toast('Отметка снята: ребёнок придёт');break;
+  case 'tour':{const [id,ans]=v.split('|'),t=TOURS.find(x=>x.id===id),was=(t.ans||{})[ME.id];t.ans={...(t.ans||{}),[ME.id]:ans};
+    if(ans==='no'&&was==='yes'){const i=ME.items.findIndex(x=>x.tour===t.id);if(i>-1){ME.items.splice(i,1);ME.debt=sumItems(ME)}}
+    notify({aud:'staff',roles:['coach','admin','director'],g:t.g,t:`${t.title}: ${short(ME.name)} — ${ans==='yes'?'едет':'не едет'}`});toast(ans==='yes'?'Участие подтверждено':'Ответ отправлен');break}
+  case 'remind':{const t=TOURS.find(x=>x.id===v);notify({aud:'parent',g:t.g,t:`Подтвердите участие в турнире «${t.title}» до ${t.deadline}`});toast('Напоминание отправлено родителям группы '+t.g);break}
+  case 'pay':S.sheet='pay';break;
+  case 'copyReq':copy(payeeText(payeeById(v),S.role==='parent'?ME:null),'Реквизиты скопированы');return;
+  case 'copyTxt':copy(v,'Скопировано');return;
+  case 'payOk':{const p=PAYREQ.find(x=>x.id===v),k=p&&kidById(p.kid);if(k){const rc=String(META.counter.rc++).padStart(4,'0'),pay=p.pay||'ano';
+      k.pays=[{d:TODAY,t:'Оплата переводом',s:p.sum,rc,pay},...(k.pays||[])];closeItems(k,p.sum,pay);
+      notify({aud:'parent',kid:k.id,t:`Оплата ${rub(p.sum)} подтверждена (${payeeById(pay).title}). Квитанция №${rc}`})}
+    if(p)PAYREQ.splice(PAYREQ.indexOf(p),1);toast('Оплата подтверждена');break}
+  case 'payNo':{const p=PAYREQ.find(x=>x.id===v);if(p){notify({aud:'parent',kid:p.kid,t:`Оплата ${rub(p.sum)} не найдена на счёте. Напишите администратору в чат`});PAYREQ.splice(PAYREQ.indexOf(p),1)}toast('Родителю отправлено уведомление');break}
+  case 'openFile':openFile(v);return;
+  case 'delDoc':{const [kid,i]=v.split('|'),k=kidById(kid);k.docs=k.docs.filter((_,j)=>j!==+i);break}
+  case 'thread':S.thread=v;break;
+  case 'back':S.thread=null;break;
+  case 'cat':S.cat=v;S.open=null;break;
+  case 'openVid':S.open=S.open===v?null:v;break;
+  case 'group':S.group=v;break;
+  case 'openKid':S.tab='groups';S.kid=v;S.draft=null;S.kidDel=null;S.editMed=false;{const k=kidById(v);if(k)S.group=k.g}break;
+  case 'closeKid':S.kid=null;S.draft=null;break;
+  case 'mark':{const [id,val]=v.split('|'),k=kidById(id),att=k.att||(k.att=[]),ex=att.find(x=>x.d===TODAY);
+    if(ex){if(ex.s===val)att.splice(att.indexOf(ex),1);else ex.s=val}else att.push({d:TODAY,s:val});break}
+  case 'delPost':POSTS=POSTS.filter(x=>x.id!==v);toast('Объявление убрано');break;
+  case 'delTour':TOURS=TOURS.filter(x=>x.id!==v);toast('Турнир убран');break;
+  case 'postNew':S.postType='promo';break;
+  case 'postType':S.postType=v;break;
+  case 'postCancel':S.postType=null;break;
+  case 'editMe':startDraft('parent',ME);break;
+  case 'kidNew':startDraft('new',null);break;
+  case 'kidEdit':startDraft('edit',kidById(v));break;
+  case 'cancelDraft':S.draft=null;break;
+  case 'saveDraft':saveDraft();break;
+  case 'delContact':{readDraft();const [kind,i]=v.split('|');(kind==='p'?S.draft.parents:S.draft.rel).splice(+i,1);break}
+  case 'addRel':readDraft();S.draft.rel.push({r:'',n:'',p:''});break;
+  case 'addParent':{readDraft();const has=S.draft.parents.map(c=>c.r);S.draft.parents.push({r:has.includes('Мама')?'Папа':'Мама',n:'',p:''});break}
+  case 'kidDel':S.kidDel=v;break;
+  case 'kidDelNo':S.kidDel=null;break;
+  case 'kidDelYes':{const k=kidById(v);KIDS=KIDS.filter(x=>x.id!==v);SLOTS.forEach(s=>{s.wait=(s.wait||[]).filter(x=>x!==v);if((s.seats||[]).includes(v)){s.seats=s.seats.filter(x=>x!==v);fillFromWait(s)}});PAYREQ=PAYREQ.filter(p=>p.kid!==v);
+    S.kid=null;S.kidDel=null;toast((k?short(k.name):'Хоккеист')+' исключён из школы');break}
+  case 'editSizes':S.editSizes=true;break;
+  case 'sizesCancel':S.editSizes=false;break;
+  case 'saveSizes':['skates','stick','helmet','jersey'].forEach(id=>ME.sizes[id]=$('#sz_'+id).value.trim());S.editSizes=false;toast('Размеры сохранены');break;
+  case 'medEdit':S.editMed=true;break;
+  case 'medCancel':S.editMed=false;break;
+  case 'evNew':S.evEdit='new';S.evDel=null;break;
+  case 'evEdit':S.evEdit=v;S.evDel=null;break;
+  case 'evCancel':S.evEdit=null;break;
+  case 'evDel':S.evDel=v;break;
+  case 'evDelNo':S.evDel=null;break;
+  case 'evDelYes':{const ev=EVENTS.find(x=>x.id===v);EVENTS=EVENTS.filter(x=>x.id!==v);S.evDel=null;if(ev)addLog(`удалено: ${ev.g==='all'?'массовое катание':'группа '+ev.g}, ${TYPES[ev.type]} ${DOWFULL[ev.d].toLowerCase()} ${evTime(ev)}`);
+    if(ev){notify({aud:'parent',g:ev.g,t:`Расписание: отменено ${TYPES[ev.type]} ${DOW[ev.d]} ${evTime(ev)}`});if(ev.g!=='all')notify({aud:'staff',roles:['coach'],g:ev.g,t:`Расписание ${ev.g}: отменено ${TYPES[ev.type]} ${DOW[ev.d]} ${evTime(ev)}`})}
+    toast('Удалено. Родители получили уведомление');break}
+  case 'slNew':S.slEdit=true;break;
+  case 'slCancel':S.slEdit=false;break;
+  case 'slDel':S.slDel=v;break;
+  case 'slDelNo':S.slDel=null;break;
+  case 'slDelYes':{const s=SLOTS.find(x=>x.id===v);if(s){s.wait=[];[...(s.seats||[])].forEach(id=>dropSeat(s,id,`Индивидуальная ${slotTitle(s)} отменена школой. Деньги за неё не начисляются`));SLOTS=SLOTS.filter(x=>x.id!==v);
+      addLog(`удалено окно индивидуальной: ${short((coachById(s.c)||{}).name)}, ${slotTitle(s)}`)}S.slDel=null;toast('Окно удалено');break}
+  case 'vNew':S.vEdit='new';S.catEdit=false;break;
+  case 'vEdit':S.vEdit=v;break;
+  case 'vCancel':S.vEdit=null;break;
+  case 'vDel':S.vDel=v;break;
+  case 'vDelNo':S.vDel=null;break;
+  case 'vDelYes':VIDEOS=VIDEOS.filter(x=>x.id!==v);S.vDel=null;toast('Материал удалён');break;
+  case 'catEdit':S.catEdit=true;S.vEdit=null;S.catDraft=[...CATS()];break;
+  case 'catClose':S.catEdit=false;break;
+  case 'catAdd':{const n=$('#catNew').value.trim();readCats();if(n&&!S.catDraft.includes(n))S.catDraft.push(n);applyCats();toast(n?'Тип «'+n+'» добавлен':'Введите название типа');break}
+  case 'catDel':{readCats();const i=+v,old=CATS()[i];S.catDraft.splice(i,1);applyCats(old);break}
+  case 'catSave':readCats();applyCats();S.catEdit=false;toast('Названия сохранены');break;
+  case 'grAdd':{const y=String($('#grNew').value||'').trim();if(!y){toast('Введите название группы, например 2022 или Новый набор');break}if(!META.groups.list.includes(y))META.groups.list=[...META.groups.list,y];toast('Группа '+y+' добавлена');break}
+  case 'grDel':META.groups.list=META.groups.list.filter(g=>g!==v);META.coaches.list.forEach(c=>c.groups=c.groups.filter(g=>g!==v));toast('Группа удалена');break;
+  case 'coAdd':{const n=$('#coNew').value.trim();if(!n){toast('Введите ФИО тренера');break}if(COACHES().length>=MAX_COACHES){toast('Не больше '+MAX_COACHES+' тренеров');break}const ph=$('#coNewP').value.trim(),em=$('#coNewE').value.trim();if(em&&!/^\S+@\S+\.\S+$/.test(em)){toast('Проверьте электронную почту');break}readCoaches();META.coaches.list=[...META.coaches.list,{id:uid('c'),name:n,phone:ph,email:em,groups:[]}];toast('Тренер добавлен. Отметьте его группы');break}
+  case 'coDel':{readCoaches();META.coaches.list=META.coaches.list.filter((_,i)=>i!==+v);break}
+  case 'coSave':readCoaches();toast('Тренеры сохранены');break;
+  case 'reset':resetDemo();return;
+  case 'lgTab':S.lg.tab=v;break;
+  case 'lgBack':S.lg.sent=false;break;
+  case 'lgSend':{const ph=$('#lgPhone').value.trim();S.lg.phone=ph;const f=findParent(ph);if(!f){toast('Номер не найден. Проверьте его или обратитесь к администратору школы');break}
+    S.lg.found=f;S.lg.code=String(1000+Math.floor(Math.random()*9000));S.lg.sent=true;break}
+  case 'lgCheck':{if(String($('#lgCode').value).trim()!==S.lg.code){toast('Неверный код');break}const f=S.lg.found;doLogin({role:'parent',kid:f.kid,pidx:f.pidx});toast('Добро пожаловать!');break}
+  case 'lgStaff':{if($('#lgPass').value!==TEST_PASS){toast('Неверный пароль');break}const r=S.lg.role,w=$('#lgWho').value;
+    doLogin({role:r,coach:r==='coach'?w:undefined,admin:r==='admin'?+w:0});toast('Добро пожаловать!');break}
+  case 'logout':S.auth=null;lsSet('titan-auth',null);S.lg=null;S.sheet=null;window.scrollTo(0,0);break;
+  default:return}
+  render();syncOut();
+  if(['tab','openKid','thread','kidNew','kidEdit','editMe'].includes(a))window.scrollTo(0,a==='thread'?document.body.scrollHeight:0);
+});
+function readCats(){CATS().forEach((_,i)=>{const e=document.getElementById('cat'+i);if(e&&S.catDraft)S.catDraft[i]=e.value.trim()||S.catDraft[i]})}
+function applyCats(removed){const oldList=CATS(),nl=S.catDraft.filter((c,i,a)=>c&&a.indexOf(c)===i);if(!nl.length)return;
+  oldList.forEach((o,i)=>{const nn=S.catDraft[i];if(nn&&nn!==o&&oldList.length===S.catDraft.length)VIDEOS.forEach(v=>{if(v.cat===o)v.cat=nn})});
+  if(removed)VIDEOS.forEach(v=>{if(v.cat===removed)v.cat=nl[0]});
+  VIDEOS.forEach(v=>{if(!nl.includes(v.cat))v.cat=nl[0]});META.cats={list:nl};S.catDraft=[...nl]}
+function readCoaches(){META.coaches.list=META.coaches.list.map((c,i)=>{const n=document.getElementById('coN'+i);const gs=[...document.querySelectorAll(`input[data-coach="${i}"]`)];
+  const ph=document.getElementById('coP'+i),em=document.getElementById('coE'+i),as=document.getElementById('coA'+i);return {...c,asst:as?as.checked:!!c.asst,name:n?(n.value.trim()||c.name):c.name,phone:ph?ph.value.trim():(c.phone||''),email:em?em.value.trim():(c.email||''),groups:gs.length?gs.filter(x=>x.checked).map(x=>x.value):c.groups}})}
+document.addEventListener('submit',async e=>{e.preventDefault();const f=e.target;const val=id=>(document.getElementById(id)||{}).value;
+  switch(f.id){
+  case 'sendForm':{const t=String(val('msg')).trim();if(!t)return;
+    MSGS.push({id:uid('m'),ts:Date.now(),th:S.thread,from:S.role==='parent'?'parent':S.role,name:S.role==='parent'?parentLabel():myName(),t,tm:now()});
+    render();syncOut();window.scrollTo(0,document.body.scrollHeight);$('#msg')?.focus();return}
+  case 'debtForm':{const k=kidById(f.dataset.kid),sm=+val('dsum'),kind=val('dkind'),t=String(val('dtext')).trim(),pay=val('dpay')||'ano';if(!sm)return;
+    if(kind==='add'){k.items.push({d:TODAY,t:t||'Начисление',s:sm,pay});k.debt=sumItems(k);notify({aud:'parent',kid:k.id,t:`Начислено ${rub(sm)}: ${t||'начисление'}`});toast('Начислено '+rub(sm)+'. Родителю ушло уведомление')}
+    else{const rc=String(META.counter.rc++).padStart(4,'0');k.pays=[{d:TODAY,t:t||'Оплата наличными',s:sm,rc,pay},...(k.pays||[])];closeItems(k,sm,pay);
+      notify({aud:'parent',kid:k.id,t:`Оплата ${rub(sm)} учтена. Квитанция №${rc}`});toast('Оплата внесена')}break}
+  case 'medForm':{const k=kidById(f.dataset.kid);const spr=fromISO(val('mSpr')),ins=fromISO(val('mIns')),file=$('#mInsFile').files[0];
+    k.med={...(k.med||{}),spr,ins};
+    if(file){try{toast('Загружаем полис…');render();const up=await readUpload(file);const fid=await putFile(up,k.id);k.med={...k.med,insFile:fid,insName:up.name};
+      if(S.role==='parent')notify({aud:'staff',roles:['admin','director'],t:`${short(k.name)}: загружен новый страховой полис до ${ins||'—'}`})}catch(err){toast(typeof err==='string'?err:'Не удалось загрузить файл');S.editMed=true;render();syncOut();return}}
+    S.editMed=false;toast('Сохранено');break}
+  case 'cmtForm':{const k=kidById(f.dataset.kid),t=String(val('cmt')).trim(),url=String(val('cmtUrl')||'').trim();if(!t&&!url)return;
+    if(url&&!/^https?:\/\//i.test(url)){toast('Ссылка на видео должна начинаться с https://');render();return}
+    k.cmts=[{d:TODAY,by:short(myName()),t:t||'Видео с тренировки',url},...(k.cmts||[])];notify({aud:'parent',kid:k.id,t:'Тренер оставил комментарий о прогрессе: '+short(k.name)});toast('Комментарий виден родителям');break}
+  case 'payForm':{const sum=+val('paySum'),pay=val('payPay')||'ano',file=$('#payFile').files[0];if(!sum)return;let fid=null;
+    if(file){try{toast('Загружаем чек…');render();fid=await putFile(await readUpload(file),ME.id)}catch(err){toast(typeof err==='string'?err:'Не удалось загрузить чек');render();return}}
+    PAYREQ.push({id:uid('q'),ts:Date.now(),kid:ME.id,sum,pay,fid,d:TODAY,by:parentLabel()});S.payPay=null;
+    notify({aud:'staff',roles:['admin','director'],t:`${short(ME.name)}: родитель сообщил об оплате ${rub(sum)} (${payeeById(pay).title})`});S.sheet=null;toast('Отправлено на проверку администратору');break}
+  case 'evForm':{const id=f.dataset.id,g=val('evG'),type=val('evType'),d=+val('evD'),s=val('evS'),en=val('evE'),place=String(val('evPlace')).trim()||PLACE[type];
+    if(!s||!en||en<=s){toast('Конец должен быть позже начала');render();return}
+    const ev={id:id||uid('e'),g,type,d,s,e:en,place};if(id){const i=EVENTS.findIndex(x=>x.id===id);EVENTS[i]=ev}else EVENTS.push(ev);EVENTS.sort(SORT.events);
+    const txt=`${id?'изменено':'добавлено'}: ${TYPES[type]} ${DOWFULL[d].toLowerCase()} ${s}–${en}`;
+    notify({aud:'parent',g,t:`Расписание ${g==='all'?'массовых катаний':'группы '+g} ${txt}`});if(g!=='all')notify({aud:'staff',roles:['coach'],g,t:`Расписание ${g} ${txt}`});
+    addLog(`${g==='all'?'массовое катание':'группа '+g}: ${txt}`);S.evEdit=null;toast('Сохранено. Родители получили уведомление');break}
+  case 'slForm':SLOTS.push({id:uid('s'),d:+val('slD'),t:val('slT'),c:S.role==='coach'?S.coach:val('slC'),k:val('slK'),cap:+val('slCap')||1,seats:[],wait:[]});SLOTS.sort(SORT.slots);S.slEdit=false;toast('Окно добавлено, родители увидят его в записи');break;
+  case 'vForm':{const id=f.dataset.id,title=String(val('vTitle')).trim(),url=String(val('vUrl')).trim();if(!title)return;
+    if(url&&!/^https?:\/\//i.test(url)){toast('Ссылка должна начинаться с https://');render();return}
+    const tips=String(val('vText')).split('\n').map(x=>x.trim()).filter(Boolean);const v={id:id||uid('v'),ts:id?(VIDEOS.find(x=>x.id===id)||{}).ts:Date.now(),cat:val('vCat'),g:val('vG'),title,url,tips};
+    if(id)VIDEOS[VIDEOS.findIndex(x=>x.id===id)]=v;else{VIDEOS.push(v);notify({aud:'parent',g:v.g,t:'Новый материал: '+title})}
+    S.vEdit=null;S.cat='Все';toast(id?'Материал обновлён':'Опубликовано');break}
+  case 'postForm':{const t=S.postType,g=val('pG'),title=String(val('pTitle')).trim();if(!title)return;
+    if(t==='tour'){TOURS.push({id:uid('t'),ts:Date.now(),g,title,dates:val('tDates')||'дата уточняется',place:val('tPlace')||'—',meet:val('tMeet')||'сообщим отдельно',deadline:fromISO(val('tDeadline')).slice(0,5)||'—',ans:{}});
+      notify({aud:'parent',g,t:'Новый турнир: '+title+'. Подтвердите участие на главном экране'})}
+    else{POSTS.unshift({id:uid('p'),ts:Date.now(),type:t,g,title,text:String(val('pText')||'').trim(),d:TODAY});notify({aud:'parent',g,t:(t==='promo'?'Акция: ':'Новость: ')+title})}
+    S.postType=null;toast('Опубликовано, родители получили уведомление');break}
+  case 'staffForm':{const adm=ADMINS().map((a,i)=>String(val('adm'+i)||'').trim()||a),dn=String(val('dirName')||'').trim()||DIRECTOR();META.staff={...META.staff,admins:adm,director:dn,owner:String(val('ownName')||'').trim()};toast('Сотрудники сохранены');break}
+  default:if(f.classList.contains('payeeForm')){const id=f.dataset.id,pe=payeeById(id);const np={...pe,title:String(val(`pe_${id}_title`)||'').trim()||pe.title};
+      PAYEE_FIELDS.forEach(([k])=>np[k]=String(val(`pe_${id}_${k}`)||'').trim());META.payees={list:PAYEES().map(x=>x.id===id?np:x)};toast('Реквизиты сохранены, родители увидят их при оплате');break}
+    return}
+  render();syncOut()});
+document.addEventListener('change',async e=>{const t=e.target;
+  if(t.id==='role'){S.role=t.value;S.tab='home';S.thread=null;S.kid=null;S.group=null;S.draft=null;S.sel=[];S.seg='train';S.sheet=null;S.editMed=false;saveMe();render();window.scrollTo(0,0)}
+  else if(t.id==='lgRole'){S.lg.role=t.value;S.lg.who=null;render()}
+  else if(t.id==='lgWho'){S.lg.who=t.value}
+  else if(t.id==='payPay'){S.payPay=t.value;const sm=paySums(ME)[t.value];const inp=$('#paySum');if(inp&&sm)inp.value=sm}
+  else if(t.id==='dsvc'){const o=t.selectedOptions[0];if(o&&o.value!==''){$('#dsum').value=o.dataset.p;$('#dtext').value=o.dataset.n;$('#dpay').value=o.dataset.pay;$('#dkind').value='add'}}
+  else if(t.id==='ident'){if(S.role==='parent'){const [k,i]=t.value.split('|');S.meKid=k;S.pidx=+i}else if(S.role==='admin')S.admin=+t.value;else S.coach=t.value;S.thread=null;S.sel=[];S.draft=null;saveMe();render()}
+  else if(t.id==='newChat'&&t.value){const ch=S.role==='coach'?'coach':S.role==='admin'?'admin':'director';S.thread=t.value+':'+ch;render();window.scrollTo(0,0)}
+  else if(t.id==='docfile'){const file=t.files[0];if(!file)return;const k=kidById(t.dataset.kid);
+    try{toast('Загружаем…');render();const up=await readUpload(file);const fid=await putFile(up,k.id);k.docs=[...(k.docs||[]),{n:up.name,by:S.role==='parent'?parentLabel():ROLE_LBL[S.role],d:TODAY,fid}];toast('Документ загружен')}
+    catch(err){toast(typeof err==='string'?err:'Не удалось загрузить файл')}render();syncOut()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.sheet){S.sheet=null;render()}});
+const _sheetOrig=sheet;sheet=function(){if(S.sheet==='copy')return `<div class="row"><h2 class="grow">Скопируйте вручную</h2><button class="btn ghost sm" data-a="closeSheet">Закрыть</button></div><textarea readonly style="min-height:180px">${esc(S.copyText)}</textarea><div class="muted">Выделите текст и скопируйте.</div>`;return _sheetOrig()};
+fixMe();render();
+(async()=>{try{if(!window.claude||!window.claude.use)return;const db=await window.claude.use('db');if(!db)return;
+  DB=db;S.loading=true;render();
+  ALLC.forEach(c=>db.collection(c+NS).onSnapshot(s=>applySnap(c,s),()=>{toast('Связь с общей базой прервалась. Обновите страницу');render()}));
+}catch(e){}})();
+</script>
+</body></html>
