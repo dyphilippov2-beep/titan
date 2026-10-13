@@ -4,8 +4,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Титан">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
 <style>html,body{margin:0;padding:0}[hidden]{display:none!important}</style>
 <script>window.TITAN_LOGIN=true;</script>
 </head><body>
@@ -771,13 +772,13 @@ function pProfile(){if(!ME)return '';const k=ME,[p,t]=attStats(k);const D=S.draf
 
 function pricesBlock(g){
   const rows=(arr)=>arr.map(([n,v,sub])=>`<div class="item"><div class="grow">${n}${sub?`<div class="muted">${sub}</div>`:''}</div><b class="num">${v}</b></div>`).join('');
-  const gp=g?[[`Секция, ${esc(gl(g))}, в месяц`,groupPrice(g)?rub(groupPrice(g)):'—','оплата до '+DUE_DAY+'-го числа · '+esc(payeeById('ano').title)]]:GROUPS().map(x=>[`Секция, ${esc(gl(x))}, в месяц`,groupPrice(x)?rub(groupPrice(x)):'—','']);
+  const gp=g?[[`Секция, ${esc(gl(g))}, в месяц`,groupPrice(g)?rub(groupPrice(g)):'—','оплата до '+DUE_DAY+'-го числа']]:GROUPS().map(x=>[`Секция, ${esc(gl(x))}, в месяц`,groupPrice(x)?rub(groupPrice(x)):'—','']);
   return `<div class="card"><div class="list">${rows(gp)}</div>
   <div class="t" style="margin-top:6px">Индивидуальные, 60 мин, с человека</div>
   <div class="prog"><span class="h">Участников</span><span class="h">Для секции</span><span class="h">Сторонние</span>
   ${[1,2,3,4,5,6].map(n=>`<span>${n===6?'6 и больше':n}</span><b class="num">${rub(IND_SEC[n])}</b><span class="num muted">${rub(IND_EXT[n])}</span>`).join('')}</div>
   <div class="t" style="margin-top:6px">Услуги арены</div>
-  <div class="list">${rows(SERVICES.map(x=>[esc(x.n),rub(x.p),esc(payeeById(x.pay).title)]))}</div></div>`}
+  <div class="list">${rows(SERVICES.map(x=>[esc(x.n),rub(x.p),'']))}</div></div>`}
 
 /* ===================== РАСПИСАНИЕ ===================== */
 function evForm(e,isMass){const x=e||{g:isMass?'all':(S.group||GROUPS()[0]),type:isMass?'mass':'ice',d:TIDX,s:'17:00',e:'18:30',place:''};
@@ -1201,4 +1202,5 @@ fixMe();render();
   ALLC.forEach(c=>db.collection(c+NS).onSnapshot(s=>applySnap(c,s),()=>{toast('Связь с общей базой прервалась. Обновите страницу');render()}));
 }catch(e){}})();
 </script>
+<script>if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
 </body></html>
