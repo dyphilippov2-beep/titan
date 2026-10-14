@@ -430,7 +430,14 @@ function saveMe(){lsSet('titan-me-v2',{role:S.role,kid:S.meKid,pidx:S.pidx,coach
 const STORE='titan-demo-v3';
 function saveLocal(){if(DB)return;try{localStorage.setItem(STORE,JSON.stringify({KIDS,EVENTS,SLOTS,POSTS,TOURS,VIDEOS,MSGS,NOTIFS,PAYREQ,META}))}catch(e){}
   try{localStorage.setItem(STORE+'-files',JSON.stringify(FILESLOCAL))}catch(e){}}
-(function loadLocal(){try{const d=JSON.parse(localStorage.getItem(STORE)||'null');if(d&&d.KIDS){({KIDS,EVENTS,SLOTS,POSTS,TOURS,VIDEOS,MSGS,NOTIFS,PAYREQ}=d);META={...META,...d.META}}
+const DEF_PAYEES=JSON.parse(JSON.stringify(META.payees));
+/* приводит старые сохранённые данные к текущим правилам школы */
+function migrateMeta(){try{
+  const pl=((META.payees||{}).list||[]).filter(p=>p.id!=='ano');
+  META.payees={list:pl.length?pl.map(p=>p.id==='ooo'?{...p,ogrn:p.ogrn||'1128602022955',title:/Заточка|Массов|Прокат|сушил/i.test(p.title||'')?'Оплата услуг школы':p.title}:p):DEF_PAYEES.list};
+  if(!COACHES().some(c=>c.goalie)){const c=COACHES().find(c=>/Плосков/.test(c.name));if(c)c.goalie=true}
+}catch(e){}}
+(function loadLocal(){try{const d=JSON.parse(localStorage.getItem(STORE)||'null');if(d&&d.KIDS){({KIDS,EVENTS,SLOTS,POSTS,TOURS,VIDEOS,MSGS,NOTIFS,PAYREQ}=d);META={...META,...d.META}}migrateMeta();
   FILESLOCAL=JSON.parse(localStorage.getItem(STORE+'-files')||'{}')}catch(e){}})();
 function resetDemo(){try{localStorage.removeItem(STORE);localStorage.removeItem(STORE+'-files')}catch(e){}location.reload()}
 
