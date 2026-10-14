@@ -204,6 +204,9 @@ body{display:flex;flex-direction:column}
 .app{flex:1 1 auto;min-height:0;width:100%;display:flex;flex-direction:column;padding-bottom:0}
 header.top{position:relative;top:auto;flex:none}
 main#main{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
+main#main>*{flex-shrink:0}
+.hscroll{align-items:flex-start;scroll-padding-inline:16px}
+.promo{height:auto}
 nav.tabs{position:relative;left:auto;right:auto;bottom:auto;flex:none}
 .composer{bottom:0}
 .savebar{bottom:8px}
@@ -257,7 +260,7 @@ const SERVICES=[
   {n:'Заточка: жёлоб',p:500,pay:'ooo'},
   {n:'Сушка: маленькая ячейка, месяц',p:3500,pay:'ooo'},
   {n:'Сушка: большая ячейка, месяц',p:5500,pay:'ooo'},
-  {n:'Бросковая зона, с человека',p:1000,pay:'ano'},
+  {n:'Бросковая зона, с человека',p:1000,pay:'ooo'},
 ];
 const MON_NOM=['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
 const DUE_DAY=10;
@@ -266,7 +269,7 @@ const DUE_DAY=10;
 const PAST=['01.10','03.10','05.10','06.10','07.10','09.10','10.10'];
 function genAtt(seed){return PAST.map((d,i)=>({d,s:((seed*7+i*3)%9===0)?'-':((seed+i)%11===0?'б':'+')}))}
 let kseq=1;
-const ab=g=>({d:'01.10',t:'Абонемент, октябрь',s:groupPrice(g),pay:'ano'});
+const ab=g=>({d:'01.10',t:'Абонемент, октябрь',s:groupPrice(g),pay:'ooo'});
 function K(name,g,num,pos,mom,momPh,dad,dadPh,owes,spr,ins){const id='k'+(kseq++);const items=owes?[ab(g)]:[];
   return {id,name,g,num,pos,debt:items.reduce((a,i)=>a+i.s,0),parents:[{r:'Мама',n:mom,p:momPh}].concat(dad?[{r:'Папа',n:dad,p:dadPh}]:[]),
     rel:[],items,pays:[],att:genAtt(kseq),
@@ -293,7 +296,7 @@ let KIDS=[
 KIDS.forEach(k=>{k.by=byOf(k.g)||(k.g==='Новый набор'?'2022':'')});KIDS[3].by='2018';
 (function(){const k=KIDS[0];k.rel=[{r:'Бабушка',n:'Смирнова Галина Петровна',p:'+7 912 600-14-05'}];
   k.att=[{d:'01.10',s:'+'},{d:'03.10',s:'+'},{d:'05.10',s:'+'},{d:'06.10',s:'б'},{d:'07.10',s:'+'},{d:'09.10',s:'-'},{d:'10.10',s:'+'}];
-  k.pays=[{d:'08.09',t:'Абонемент, сентябрь',s:12000,rc:'0041',pay:'ano'}];
+  k.pays=[{d:'08.09',t:'Абонемент, сентябрь',s:12000,rc:'0041',pay:'ooo'}];
   k.docs=[{n:'Договор на оказание услуг №145.pdf',by:'Администратор',d:'01.09',fid:null}];
   k.sizes={skates:'Bauer',skSize:'3.5 D'};
   k.cmts=[{d:'09.10',by:'Горшков Н.Л.',t:'Хорошо прибавил в броске. Работаем над обводкой: держит шайбу далеко от себя, теряет на смене направления.',url:''}];
@@ -362,8 +365,7 @@ let META={
     {id:'c6',name:'Белкин Илья Дмитриевич',phone:'',email:'',groups:['Группа здоровья']}]},
   staff:{admins:['Шаймухаметова Эльвена Алфритовна','Панасенкова Ирина Александровна','Иванова Наталья Ивановна'],director:'Ростовская Александра Владимировна'},
   payees:{list:[
-    {id:'ano',title:'Секция, индивидуальные, бросковая зона',recipient:'АНО "ЦЕНТР ПОДДЕРЖКИ И РАЗВИТИЯ ХОККЕЯ С ШАЙБОЙ"',inn:'8602998542',kpp:'860201001',ogrn:'1148600000911',account:'40703810767170040793',bank:'ЗАПАДНО-СИБИРСКОЕ ОТДЕЛЕНИЕ №8647 ПАО СБЕРБАНК',bik:'047102651',corr:'30101810800000000651',bankInn:'7707083893',bankKpp:'860202001',sbp:'',purpose:'Оплата за {ФИО ребёнка}'},
-    {id:'ooo',title:'Заточка и сушилка',recipient:'ООО "ПРОДЭКО-РИТЕЙЛ"',inn:'8602195270',kpp:'860201001',ogrn:'',account:'40702810213500005184',bank:'ООО "Банк Точка"',bik:'044525104',corr:'30101810745374525104',bankInn:'',bankKpp:'',sbp:'',purpose:'Оплата за {ФИО ребёнка}'}]},
+    {id:'ooo',title:'Оплата услуг школы',recipient:'ООО "ПРОДЭКО-РИТЕЙЛ"',inn:'8602195270',kpp:'860201001',ogrn:'1128602022955',account:'40702810213500005184',bank:'ООО "Банк Точка"',bik:'044525104',corr:'30101810745374525104',bankInn:'',bankKpp:'',sbp:'',purpose:'Оплата за {ФИО ребёнка}'}]},
   log:{list:[]},
   cats:{list:[BK,INT]},
   abs:{map:{['k3|'+TODAY]:'болеет'}},
@@ -405,7 +407,7 @@ const DIRECTOR=()=>META.staff.director;
 const PAYEES=()=>META.payees.list;
 const payeeById=id=>PAYEES().find(p=>p.id===id)||PAYEES()[0];
 const myName=()=>S.role==='parent'?myParent().n:S.role==='coach'?(coachById(S.coach)||{}).name:S.role==='admin'?(ADMINS()[S.admin]||ADMINS()[0]||'Администратор'):S.role==='owner'?(META.staff.owner||'Собственник'):DIRECTOR();
-const paySums=k=>{const m={};(k.items||[]).forEach(i=>{const p=i.pay||'ano';m[p]=(m[p]||0)+i.s});return m};
+const paySums=k=>{const m={};(k.items||[]).forEach(i=>{const p=payeeById(i.pay).id;m[p]=(m[p]||0)+i.s});return m};
 const dueDate=()=>{const d=new Date(TODAY_D.getFullYear(),TODAY_D.getMonth(),DUE_DAY);return fmt(d)};
 const slotDate=s=>{let d=addDays(MONDAY,s.d);const [h,m]=String(s.t).split(':').map(Number);d.setHours(h||0,m||0,0,0);return d};
 const canCancel=s=>slotDate(s)-new Date()>=24*3600e3;
@@ -580,8 +582,8 @@ function doLogin(a){S.auth=a;lsSet('titan-auth',a);S.role=a.role;S.meKid=a.kid||
   S.lg=null;S.tab='home';S.thread=null;S.kid=null;S.group=null;S.draft=null;S.sel=[];S.seg='train';fixMe()}
 
 /* ===================== СОГЛАСИЕ НА ОБРАБОТКУ ПД ===================== */
-function consentText(k){const op=payeeById('ano');
-  return [`Я, ${myParent().n||'родитель'}, являясь законным представителем ребёнка ${k?k.name:''}, даю согласие ${op.recipient} (ИНН ${op.inn}, ОГРН ${op.ogrn}), г. Сургут, на обработку моих персональных данных и персональных данных ребёнка.`,
+function consentText(k){const op=payeeById('ooo');
+  return [`Я, ${myParent().n||'родитель'}, являясь законным представителем ребёнка ${k?k.name:''}, даю согласие ${op.recipient} (ИНН ${op.inn}${op.ogrn?', ОГРН '+op.ogrn:''}), г. Сургут, на обработку моих персональных данных и персональных данных ребёнка.`,
     'Состав данных: ФИО ребёнка, год рождения (группа), игровой номер и амплуа; ФИО и телефоны родителей и доверенных лиц; сроки действия медицинской справки и страховки, страховой полис; сведения о посещаемости, оплатах и задолженности; переписка со школой; загруженные документы.',
     'Цели: организация тренировочного процесса, запись на тренировки, учёт посещаемости и оплат, связь с родителями.',
     'Действия: сбор, запись, хранение, уточнение, использование, удаление. Данные доступны только тренерам группы и администрации школы и не передаются третьим лицам, кроме случаев, предусмотренных законом.',
@@ -609,7 +611,7 @@ function sheet(){
     const sel=S.payPay&&sums[S.payPay]?S.payPay:(pays[0]||PAYEES()[0]).id;
     return `<div class="row"><h2 class="grow">Оплата</h2><button class="btn ghost sm" data-a="closeSheet">Закрыть</button></div>
     <div class="card"><div class="muted">К оплате всего</div><div class="big">${rub(k.debt)}</div>
-    <div class="list">${k.items.map(i=>`<div class="item"><div class="grow">${esc(i.t)}<div class="muted">${esc(i.d)} · ${esc(payeeById(i.pay||'ano').title)}</div></div><b class="num">${rub(i.s)}</b></div>`).join('')}</div>
+    <div class="list">${k.items.map(i=>`<div class="item"><div class="grow">${esc(i.t)}<div class="muted">${esc(i.d)}</div></div><b class="num">${rub(i.s)}</b></div>`).join('')}</div>
     ${pays.length>1?'<div class="note">Деньги идут двум получателям: переведите каждую сумму на свои реквизиты.</div>':''}</div>
     <div class="t">1. Переведите деньги</div>
     ${pays.map(pe=>payeeBlock(pe,k,sums[pe.id])).join('')||'<div class="muted">Долга нет.</div>'}
@@ -719,7 +721,7 @@ function debtCard(k){
   if(!k.debt)return `<div class="card debt clear"><div class="row"><div class="grow"><div class="muted">Задолженность</div><div class="big" style="color:var(--ok)">0 ₽</div></div><span class="pill ok">Оплачено</span></div>${pendHtml}</div>`;
   const late=TODAY_D.getDate()>DUE_DAY&&k.items.some(i=>/^Абонемент/.test(i.t));
   return `<div class="card debt"><div class="row"><div class="grow"><div class="muted">К оплате</div><div class="big">${rub(k.debt)}</div></div><span class="pill ${late?'bad':'warn'}">${late?'просрочено':'до '+dueDate()}</span></div>
-  <div class="list">${k.items.map(i=>`<div class="item"><div class="grow">${esc(i.t)}<div class="muted">${esc(i.d)} · ${esc(payeeById(i.pay||'ano').title)}</div></div><b class="num">${rub(i.s)}</b></div>`).join('')}</div>
+  <div class="list">${k.items.map(i=>`<div class="item"><div class="grow">${esc(i.t)}<div class="muted">${esc(i.d)}</div></div><b class="num">${rub(i.s)}</b></div>`).join('')}</div>
   ${pendHtml}<button class="btn red block" data-a="pay">Как оплатить</button><div class="muted">Абонемент оплачивается до ${DUE_DAY}-го числа каждого месяца.</div></div>`}
 const byTime=(a,b)=>String(a.s).localeCompare(String(b.s));
 function upcoming(g,n){const out=[];for(let i=0;i<7&&out.length<n;i++){const di=(TIDX+i)%7,dt=fmt(addDays(TODAY_D,i));
@@ -772,13 +774,13 @@ function pProfile(){if(!ME)return '';const k=ME,[p,t]=attStats(k);const D=S.draf
 
 function pricesBlock(g){
   const rows=(arr)=>arr.map(([n,v,sub])=>`<div class="item"><div class="grow">${n}${sub?`<div class="muted">${sub}</div>`:''}</div><b class="num">${v}</b></div>`).join('');
-  const gp=g?[[`Секция, ${esc(gl(g))}, в месяц`,groupPrice(g)?rub(groupPrice(g)):'—','оплата до '+DUE_DAY+'-го числа · '+esc(payeeById('ano').title)]]:GROUPS().map(x=>[`Секция, ${esc(gl(x))}, в месяц`,groupPrice(x)?rub(groupPrice(x)):'—','']);
+  const gp=g?[[`Секция, ${esc(gl(g))}, в месяц`,groupPrice(g)?rub(groupPrice(g)):'—','оплата до '+DUE_DAY+'-го числа']]:GROUPS().map(x=>[`Секция, ${esc(gl(x))}, в месяц`,groupPrice(x)?rub(groupPrice(x)):'—','']);
   return `<div class="card"><div class="list">${rows(gp)}</div>
   <div class="t" style="margin-top:6px">Индивидуальные, 60 мин, с человека</div>
   <div class="prog"><span class="h">Участников</span><span class="h">Для секции</span><span class="h">Сторонние</span>
   ${[1,2,3,4,5,6].map(n=>`<span>${n===6?'6 и больше':n}</span><b class="num">${rub(IND_SEC[n])}</b><span class="num muted">${rub(IND_EXT[n])}</span>`).join('')}</div>
   <div class="t" style="margin-top:6px">Услуги арены</div>
-  <div class="list">${rows(SERVICES.map(x=>[esc(x.n),rub(x.p),esc(payeeById(x.pay).title)]))}</div></div>`}
+  <div class="list">${rows(SERVICES.map(x=>[esc(x.n),rub(x.p),'']))}</div></div>`}
 
 /* ===================== РАСПИСАНИЕ ===================== */
 function evForm(e,isMass){const x=e||{g:isMass?'all':(S.group||GROUPS()[0]),type:isMass?'mass':'ice',d:TIDX,s:'17:00',e:'18:30',place:''};
@@ -951,15 +953,15 @@ function sGroups(){
 function kidCard(k){const [p,t]=attStats(k);
   if(S.draft&&S.draft.mode==='edit'&&S.draft.id===k.id)return `<button class="back" data-a="cancelDraft">‹ Карточка</button>${draftForm()}`;
   const ro=S.role==='coach';
-  const svc=[[`Абонемент, ${MON_NOM[TODAY_D.getMonth()]}`,groupPrice(k.g),'ano'],...SERVICES.map(x=>[x.n,x.p,x.pay])];
+  const svc=[[`Абонемент, ${MON_NOM[TODAY_D.getMonth()]}`,groupPrice(k.g),'ooo'],...SERVICES.map(x=>[x.n,x.p,x.pay])];
   const fin=`<div class="card"><div class="row"><div class="grow"><div class="muted">Задолженность</div><div class="big" style="color:${k.debt?'var(--alarm)':'var(--ok)'}">${rub(k.debt)}</div></div>${k.debt?`<span class="pill ${TODAY_D.getDate()>DUE_DAY?'bad':'warn'}">${TODAY_D.getDate()>DUE_DAY?'просрочено':'до '+dueDate()}</span>`:''}</div>
-  ${k.items.length?`<div class="list">${k.items.map(i=>`<div class="item"><div class="grow">${esc(i.t)}<div class="muted">начислено ${esc(i.d)} · ${esc(payeeById(i.pay||'ano').title)}</div></div><b class="num">${rub(i.s)}</b></div>`).join('')}</div>`:''}
-  ${(k.pays||[]).length?`<div class="t">Оплаты</div><div class="list">${k.pays.map(x=>`<div class="item"><div class="grow">${esc(x.t)}<div class="muted">${esc(x.d)}${x.rc?' · квитанция №'+esc(x.rc):''}${x.pay?' · '+esc(payeeById(x.pay).title):''}</div></div><b class="num">${rub(x.s)}</b></div>`).join('')}</div>`:''}
+  ${k.items.length?`<div class="list">${k.items.map(i=>`<div class="item"><div class="grow">${esc(i.t)}<div class="muted">начислено ${esc(i.d)}</div></div><b class="num">${rub(i.s)}</b></div>`).join('')}</div>`:''}
+  ${(k.pays||[]).length?`<div class="t">Оплаты</div><div class="list">${k.pays.map(x=>`<div class="item"><div class="grow">${esc(x.t)}<div class="muted">${esc(x.d)}${x.rc?' · квитанция №'+esc(x.rc):''}</div></div><b class="num">${rub(x.s)}</b></div>`).join('')}</div>`:''}
   ${ro?'<div class="muted">Только просмотр. Начисления и оплаты вносит администратор.</div>':`<form id="debtForm" class="form" data-kid="${k.id}" style="border-top:1px solid var(--line);padding-top:10px">
     <label class="field">Услуга<select class="in" id="dsvc"><option value="">Другое — впишите ниже</option>${svc.map(([n,p,pay],i)=>`<option value="${i}" data-n="${esc(n)}" data-p="${p}" data-pay="${pay}">${esc(n)} — ${rub(p)}</option>`).join('')}</select></label>
     <div class="grid2"><input type="number" id="dsum" min="1" placeholder="Сумма, ₽" required aria-label="Сумма"><select class="in" id="dkind" aria-label="Операция"><option value="add">Начислить</option><option value="pay">Оплата наличными</option></select></div>
     <input type="text" id="dtext" placeholder="За что: абонемент, турнир, форма…" aria-label="За что">
-    <label class="field">Получатель<select class="in" id="dpay">${PAYEES().map(pe=>`<option value="${pe.id}">${esc(pe.title)}</option>`).join('')}</select></label>
+    ${PAYEES().length>1?`<label class="field">Получатель<select class="in" id="dpay">${PAYEES().map(pe=>`<option value="${pe.id}">${esc(pe.title)}</option>`).join('')}</select></label>`:`<input type="hidden" id="dpay" value="${PAYEES()[0].id}">`}
     <button class="btn red" type="submit">Сохранить и уведомить родителя</button></form>`}</div>`;
   return `<button class="back" data-a="closeKid">‹ Группа ${esc(gl(k.g))}</button>
   ${kidHead(k)}
@@ -1003,14 +1005,14 @@ function school(){const dir=isTop();
 function copy(text,ok){const fail=()=>{S.sheet='copy';S.copyText=text;render()};
   try{navigator.clipboard.writeText(text).then(()=>{toast(ok);render()},fail)}catch(e){fail()}}
 const slotTitle=s=>`${WEEK[s.d][0]}, ${WEEK[s.d][1]} в ${s.t}`;
-function chargeSlot(k,s){k.items.push({d:TODAY,t:`Индивидуальная, ${WEEK[s.d][0]} ${WEEK[s.d][1]} ${s.t}`,s:indPrice(s.cap),slot:s.id,pay:'ano'});k.debt=sumItems(k)}
+function chargeSlot(k,s){k.items.push({d:TODAY,t:`Индивидуальная, ${WEEK[s.d][0]} ${WEEK[s.d][1]} ${s.t}`,s:indPrice(s.cap),slot:s.id,pay:'ooo'});k.debt=sumItems(k)}
 function dropSeat(s,kid,why){s.seats=(s.seats||[]).filter(x=>x!==kid);const k=kidById(kid);
   if(k){const i=k.items.findIndex(x=>x.slot===s.id);if(i>-1){k.items.splice(i,1);k.debt=sumItems(k)}if(why)notify({aud:'parent',kid:k.id,t:why})}}
 function fillFromWait(s){s.seats=s.seats||[];while(seatsLeft(s)>0&&(s.wait||[]).length){const nx=s.wait.shift(),nk=kidById(nx);if(!nk||s.seats.includes(nx))continue;
   s.seats.push(nx);chargeSlot(nk,s);
   notify({aud:'parent',kid:nx,t:`Освободилось место: вы записаны на индивидуальную ${slotTitle(s)}`});
   notify({aud:'staff',roles:['coach','admin'],coach:s.c,t:`${short(nk.name)} записан из листа ожидания: ${slotTitle(s)}`})}}
-function closeItems(k,sum,pay){let left=sum;const its=k.items.filter(i=>(i.pay||'ano')===pay);
+function closeItems(k,sum,pay){let left=sum;const its=k.items.filter(i=>payeeById(i.pay).id===payeeById(pay).id);
   for(const it of its){if(left<=0)break;if(it.s<=left){left-=it.s;k.items.splice(k.items.indexOf(it),1)}else{it.s-=left;left=0}}
   k.debt=sumItems(k)}
 document.addEventListener('click',async e=>{
@@ -1045,7 +1047,7 @@ document.addEventListener('click',async e=>{
   case 'pay':S.sheet='pay';break;
   case 'copyReq':copy(payeeText(payeeById(v),S.role==='parent'?ME:null),'Реквизиты скопированы');return;
   case 'copyTxt':copy(v,'Скопировано');return;
-  case 'payOk':{const p=PAYREQ.find(x=>x.id===v),k=p&&kidById(p.kid);if(k){const rc=String(META.counter.rc++).padStart(4,'0'),pay=p.pay||'ano';
+  case 'payOk':{const p=PAYREQ.find(x=>x.id===v),k=p&&kidById(p.kid);if(k){const rc=String(META.counter.rc++).padStart(4,'0'),pay=p.pay||'ooo';
       k.pays=[{d:TODAY,t:'Оплата переводом',s:p.sum,rc,pay},...(k.pays||[])];closeItems(k,p.sum,pay);
       notify({aud:'parent',kid:k.id,t:`Оплата ${rub(p.sum)} подтверждена (${payeeById(pay).title}). Квитанция №${rc}`})}
     if(p)PAYREQ.splice(PAYREQ.indexOf(p),1);toast('Оплата подтверждена');break}
@@ -1144,7 +1146,7 @@ document.addEventListener('submit',async e=>{e.preventDefault();const f=e.target
   case 'sendForm':{const t=String(val('msg')).trim();if(!t)return;
     MSGS.push({id:uid('m'),ts:Date.now(),th:S.thread,from:S.role==='parent'?'parent':S.role,name:S.role==='parent'?parentLabel():myName(),t,tm:now()});
     render();syncOut();scrollMain(MAIN().scrollHeight);$('#msg')?.focus();return}
-  case 'debtForm':{const k=kidById(f.dataset.kid),sm=+val('dsum'),kind=val('dkind'),t=String(val('dtext')).trim(),pay=val('dpay')||'ano';if(!sm)return;
+  case 'debtForm':{const k=kidById(f.dataset.kid),sm=+val('dsum'),kind=val('dkind'),t=String(val('dtext')).trim(),pay=val('dpay')||'ooo';if(!sm)return;
     if(kind==='add'){k.items.push({d:TODAY,t:t||'Начисление',s:sm,pay});k.debt=sumItems(k);notify({aud:'parent',kid:k.id,t:`Начислено ${rub(sm)}: ${t||'начисление'}`});toast('Начислено '+rub(sm)+'. Родителю ушло уведомление')}
     else{const rc=String(META.counter.rc++).padStart(4,'0');k.pays=[{d:TODAY,t:t||'Оплата наличными',s:sm,rc,pay},...(k.pays||[])];closeItems(k,sm,pay);
       notify({aud:'parent',kid:k.id,t:`Оплата ${rub(sm)} учтена. Квитанция №${rc}`});toast('Оплата внесена')}break}
@@ -1156,7 +1158,7 @@ document.addEventListener('submit',async e=>{e.preventDefault();const f=e.target
   case 'cmtForm':{const k=kidById(f.dataset.kid),t=String(val('cmt')).trim(),url=String(val('cmtUrl')||'').trim();if(!t&&!url)return;
     if(url&&!/^https?:\/\//i.test(url)){toast('Ссылка на видео должна начинаться с https://');render();return}
     k.cmts=[{d:TODAY,by:short(myName()),t:t||'Видео с тренировки',url},...(k.cmts||[])];notify({aud:'parent',kid:k.id,t:'Тренер оставил комментарий о прогрессе: '+short(k.name)});toast('Комментарий виден родителям');break}
-  case 'payForm':{const sum=+val('paySum'),pay=val('payPay')||'ano',file=$('#payFile').files[0];if(!sum)return;let fid=null;
+  case 'payForm':{const sum=+val('paySum'),pay=val('payPay')||'ooo',file=$('#payFile').files[0];if(!sum)return;let fid=null;
     if(file){try{toast('Загружаем чек…');render();fid=await putFile(await readUpload(file),ME.id)}catch(err){toast(typeof err==='string'?err:'Не удалось загрузить чек');render();return}}
     PAYREQ.push({id:uid('q'),ts:Date.now(),kid:ME.id,sum,pay,fid,d:TODAY,by:parentLabel()});S.payPay=null;
     notify({aud:'staff',roles:['admin','director'],t:`${short(ME.name)}: родитель сообщил об оплате ${rub(sum)} (${payeeById(pay).title})`});S.sheet=null;toast('Отправлено на проверку администратору');break}
