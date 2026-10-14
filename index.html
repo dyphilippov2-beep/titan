@@ -211,6 +211,7 @@ main#main>*{flex-shrink:0}
 .klist .kl:first-child{border-top:0}
 .klist .kn{font-weight:800;color:var(--gold);min-width:18px}
 .slotc.past{opacity:.6}
+.ev-i.past{opacity:.55}
 .promo{height:auto}
 nav.tabs{position:relative;left:auto;right:auto;bottom:auto;flex:none}
 .composer{bottom:0}
@@ -416,6 +417,7 @@ const myName=()=>S.role==='parent'?myParent().n:S.role==='coach'?(coachById(S.co
 const paySums=k=>{const m={};(k.items||[]).forEach(i=>{const p=payeeById(i.pay).id;m[p]=(m[p]||0)+i.s});return m};
 const dueDate=()=>{const d=new Date(TODAY_D.getFullYear(),TODAY_D.getMonth(),DUE_DAY);return fmt(d)};
 const slotDate=s=>{let d=addDays(MONDAY,s.d);const [h,m]=String(s.t).split(':').map(Number);d.setHours(h||0,m||0,0,0);return d};
+const isPast=s=>slotDate(s)<=new Date();
 const canCancel=s=>slotDate(s)-new Date()>=24*3600e3;
 const seatsLeft=s=>Infinity;/* число участников индивидуальной не ограничено */
 const nSeats=s=>(s.seats||[]).length;
@@ -753,7 +755,7 @@ function tourCard(t,k){const a=(t.ans||{})[k.id];
    :a==='no'?`<div class="row"><span class="pill">Не едем</span><button class="btn ghost sm" data-a="tour" data-v="${t.id}|yes">Всё-таки едем</button></div>`
    :`<div class="muted">Ответьте до ${esc(t.deadline)}. Турнирный взнос оплачивается отдельно, не через приложение.</div><div class="row"><button class="btn red grow" data-a="tour" data-v="${t.id}|yes">Едем</button><button class="btn ghost grow" data-a="tour" data-v="${t.id}|no">Не едем</button></div>`}</div>`}
 function pHome(){if(!ME)return '';const k=ME;
-  const invs=SLOTS.filter(s=>isInv(s,k.id));
+  const invs=SLOTS.filter(s=>isInv(s,k.id)&&!isPast(s));
   const mine=SLOTS.filter(s=>(s.seats||[]).includes(k.id)&&!isInv(s,k.id)),waits=SLOTS.filter(s=>(s.wait||[]).includes(k.id));
   const alerts=medStatus(k).filter(m=>m.left<=30).map(m=>`<div class="card alert"><div class="t">${m.n}: ${!m.d?'не сдана':m.left<0?'срок истёк':'осталось '+m.left+' дн.'}</div><div class="muted">${m.key==='ins'?'Загрузите новый полис в разделе «Ребёнок».':'Передайте новую справку администратору.'} Без действующего документа ребёнка не допустят на лёд.</div><button class="btn ghost sm" data-a="goMed">Открыть</button></div>`).join('');
   const nextEv=upcoming(k.g,10).map(e=>{const ab=ABS()[k.id+'|'+e.dt];let extra;
@@ -843,8 +845,9 @@ function indSlots(){
   if(S.role==='parent'){const k=ME;if(!k)return '';const sel=S.sel;let total=0;
     const html=WEEK.map(([dw,dt],i)=>{const ss=SLOTS.filter(s=>s.d===i);if(!ss.length)return '';
       return `<div class="day"><div class="date"><b>${dt.slice(0,2)}</b><span>${dw}</span></div><div class="ev">${ss.map(s=>{let right='',cls='';const left=seatsLeft(s),mine=(s.seats||[]).includes(k.id);
-        if(mine&&isInv(s,k.id))right=`<span class="pill warn" style="flex-basis:100%;text-align:center">Тренер приглашает на тренировку</span><button class="btn red sm" data-a="invYes" data-v="${s.id}">Приду</button><button class="btn ghost sm" data-a="invNo" data-v="${s.id}">Отказаться</button>`;
+        if(mine&&isInv(s,k.id)&&!isPast(s))right=`<span class="pill warn" style="flex-basis:100%;text-align:center">Тренер приглашает на тренировку</span><button class="btn red sm" data-a="invYes" data-v="${s.id}">Приду</button><button class="btn ghost sm" data-a="invNo" data-v="${s.id}">Отказаться</button>`;
         else if(mine)right=`<span class="pill ok">Вы записаны</span>`+(canCancel(s)?`<button class="btn ghost sm" data-a="unbook" data-v="${s.id}">Отменить</button>`:`<span class="muted" style="flex-basis:100%">Отмена без оплаты — не позднее чем за 24 часа. Сейчас отменить может только администратор.</span>`);
+        else if(isPast(s)){cls='past';right=`<span class="pill">Тренировка прошла</span>`}
         else{const on=sel.includes(s.id);if(on){cls='sel';total+=joinPrice(s)}right=`<button class="btn ${on?'red':''} sm" data-a="pick" data-v="${s.id}" aria-pressed="${on}">${on?'Выбрано ✓':'Выбрать'}</button>`}
         return `<div class="ev-i ${cls}" style="flex-wrap:wrap"><span class="time">${esc(s.t)}</span><div class="grow"><b>${esc(s.k)}</b><div class="muted">${slotLine(s,!mine)}</div></div><div class="row" style="gap:6px;flex-wrap:wrap;flex-basis:100%;justify-content:flex-end">${right}</div></div>`}).join('')}</div></div>`}).join('');
     return `<div class="note">Отметьте одно или несколько окон и нажмите «Сохранить запись». Мест не ограничено: чем больше участников, тем дешевле каждому — от 2 500 ₽ за одного до 1 300 ₽ с человека, когда участников 6 и больше. Отменить без оплаты можно не позднее чем за 24 часа.</div>
@@ -1058,9 +1061,9 @@ document.addEventListener('click',async e=>{
   case 'seg':S.seg=v;S.evEdit=null;S.evDel=null;S.slEdit=false;break;
   case 'goInd':S.tab='sched';S.seg='ind';break;
   case 'goMed':S.tab='profile';S.editMed=true;render();document.getElementById('medH')?.scrollIntoView();return;
-  case 'pick':S.sel=S.sel.includes(v)?S.sel.filter(x=>x!==v):[...S.sel,v];break;
+  case 'pick':{const s=SLOTS.find(x=>x.id===v);if(s&&isPast(s)){toast('Эта тренировка уже прошла');break}S.sel=S.sel.includes(v)?S.sel.filter(x=>x!==v):[...S.sel,v];break}
   case 'pickClear':S.sel=[];break;
-  case 'bookSel':{let n=0,sum=0;S.sel.forEach(id=>{const s=SLOTS.find(x=>x.id===id);if(!s||(s.seats||[]).includes(ME.id)||seatsLeft(s)<=0)return;
+  case 'bookSel':{let n=0,sum=0;S.sel.forEach(id=>{const s=SLOTS.find(x=>x.id===id);if(!s||(s.seats||[]).includes(ME.id)||seatsLeft(s)<=0||isPast(s))return;
       s.seats=[...(s.seats||[]),ME.id];chargeSlot(ME,s);n++;sum+=curPrice(s);
       notify({aud:'staff',roles:['coach','admin'],coach:s.c,t:`${short(ME.name)} записан на индивидуальную ${slotTitle(s)}`})});
     S.sel=[];toast(n?`Записали на ${n} ${n===1?'тренировку':n<5?'тренировки':'тренировок'}. ${rub(sum)} добавлено к оплате`:'Эти окна уже заняли, выберите другие');break}
@@ -1070,12 +1073,12 @@ document.addEventListener('click',async e=>{
   case 'unwait':{const s=SLOTS.find(x=>x.id===v);if(s)s.wait=(s.wait||[]).filter(x=>x!==ME.id);break}
   case 'unseat':{const [sid,kid]=v.split('|'),s=SLOTS.find(x=>x.id===sid);if(s){dropSeat(s,kid,`Запись на индивидуальную ${slotTitle(s)} отменена ${S.role==='coach'?'тренером':'администратором'}`);fillFromWait(s)}toast('Запись отменена');break}
   case 'coAddKid':{const s=SLOTS.find(x=>x.id===v),sel=document.getElementById('addk_'+v),kid=sel&&sel.value,k=kid&&kidById(kid);
-    if(!s||!k){toast('Выберите хоккеиста');break}if((s.seats||[]).includes(kid)){toast('Уже записан');break}
+    if(!s||!k){toast('Выберите хоккеиста');break}if(isPast(s)){toast('Эта тренировка уже прошла');break}if((s.seats||[]).includes(kid)){toast('Уже записан');break}
     s.seats=[...(s.seats||[]),kid];s.inv=[...(s.inv||[]),kid];chargeSlot(k,s);
     notify({aud:'parent',kid,t:`Тренер приглашает ${short(k.name)} на индивидуальную ${slotTitle(s)}. Подтвердите «Приду» или откажитесь на главном экране`});
     notify({aud:'staff',roles:['admin'],t:`${short(myName())} записал ${short(k.name)} на индивидуальную ${slotTitle(s)}`});
     toast(`${short(k.name)} добавлен. Участников: ${nSeats(s)}, ${rub(curPrice(s))} с человека`);break}
-  case 'invYes':{const s=SLOTS.find(x=>x.id===v);if(!s)break;s.inv=(s.inv||[]).filter(x=>x!==ME.id);
+  case 'invYes':{const s=SLOTS.find(x=>x.id===v);if(!s)break;if(isPast(s)){toast('Эта тренировка уже прошла');break}s.inv=(s.inv||[]).filter(x=>x!==ME.id);
     notify({aud:'staff',roles:['coach','admin'],coach:s.c,t:`${short(ME.name)} подтвердил индивидуальную ${slotTitle(s)}`});toast('Спасибо! Тренер увидит, что вы придёте');break}
   case 'invNo':{const s=SLOTS.find(x=>x.id===v);if(!s)break;s.inv=(s.inv||[]).filter(x=>x!==ME.id);dropSeat(s,ME.id);
     notify({aud:'staff',roles:['coach','admin'],coach:s.c,t:`${short(ME.name)} отказался от индивидуальной ${slotTitle(s)}`});toast('Вы отказались. Тренировка не начислена, тренер предупреждён');break}
@@ -1210,7 +1213,7 @@ document.addEventListener('submit',async e=>{e.preventDefault();const f=e.target
     const txt=`${id?'изменено':'добавлено'}: ${TYPES[type]} ${DOWFULL[d].toLowerCase()} ${s}–${en}`;
     notify({aud:'parent',g,t:`Расписание ${g==='all'?'массовых катаний':'группы '+g} ${txt}`});if(g!=='all')notify({aud:'staff',roles:['coach'],g,t:`Расписание ${g} ${txt}`});
     addLog(`${g==='all'?'массовое катание':'группа '+g}: ${txt}`);S.evEdit=null;toast('Сохранено. Родители получили уведомление');break}
-  case 'slForm':{const sc=S.role==='coach'?S.coach:val('slC');if(val('slK')===GK&&!(coachById(sc)||{}).goalie){const gs=COACHES().filter(c=>c.goalie).map(c=>short(c.name)).join(', ');toast('Вратарские тренировки проводит только '+(gs||'отмеченный тренер'));render();return}}
+  case 'slForm':{if(isPast({d:+val('slD'),t:val('slT')})){toast('Это время уже прошло. Выберите день и время позже');render();return}const sc=S.role==='coach'?S.coach:val('slC');if(val('slK')===GK&&!(coachById(sc)||{}).goalie){const gs=COACHES().filter(c=>c.goalie).map(c=>short(c.name)).join(', ');toast('Вратарские тренировки проводит только '+(gs||'отмеченный тренер'));render();return}}
     SLOTS.push({id:uid('s'),d:+val('slD'),t:val('slT'),c:S.role==='coach'?S.coach:val('slC'),k:val('slK'),cap:0,seats:[],wait:[]});SLOTS.sort(SORT.slots);S.slEdit=false;toast('Окно добавлено, родители увидят его в записи');break;
   case 'vForm':{const id=f.dataset.id,title=String(val('vTitle')).trim(),url=String(val('vUrl')).trim();if(!title)return;
     if(url&&!/^https?:\/\//i.test(url)){toast('Ссылка должна начинаться с https://');render();return}
