@@ -248,7 +248,7 @@ const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const TYPES={ice:'Лёд',ofp:'ОФП',game:'Игра',mass:'Массовое катание'};
 const PLACE={ice:'Лёд',ofp:'ОФП',game:'Лёд',mass:'Лёд'};
 const POS=['Нападающий','Защитник','Вратарь'];
-const KINDS=['Полевой игрок','Вратарская','Катание и техника','Бросок'];const GK='Вратарская';
+const FK='Полевой игрок',GK='Вратарская';const KINDS=[FK,GK];
 const MAX_COACHES=9;
 const ROLE_LBL={parent:'Родитель',coach:'Тренер',admin:'Администратор',director:'Руководитель',owner:'Собственник'};
 const CH_LBL={coach:'Тренер',admin:'Администратор',director:'Руководитель школы'};
@@ -319,14 +319,14 @@ let EVENTS=[
 ];
 let SLOTS=[
   {id:'s1',d:1,t:'13:00',c:'c1',k:'Полевой игрок',cap:1,seats:[],wait:[]},
-  {id:'s2',d:1,t:'14:00',c:'c1',k:'Бросок',cap:2,seats:['k2'],wait:[]},
+  {id:'s2',d:1,t:'14:00',c:'c1',k:'Полевой игрок',cap:2,seats:['k2'],wait:[]},
   {id:'s3',d:2,t:'14:00',c:'c5',k:'Вратарская',cap:1,seats:[],wait:[]},
-  {id:'s4',d:3,t:'13:00',c:'c1',k:'Катание и техника',cap:3,seats:['k4'],wait:[]},
+  {id:'s4',d:3,t:'13:00',c:'c1',k:'Полевой игрок',cap:3,seats:['k4'],wait:[]},
   {id:'s5',d:3,t:'15:00',c:'c3',k:'Полевой игрок',cap:1,seats:['k10','k11'],wait:[]},
   {id:'s6',d:5,t:'12:00',c:'c2',k:'Полевой игрок',cap:4,seats:['k7','k9'],wait:[]},
-  {id:'s7',d:6,t:'12:00',c:'c5',k:'Катание и техника',cap:2,seats:[],wait:[]},
+  {id:'s7',d:6,t:'12:00',c:'c5',k:'Вратарская',cap:2,seats:[],wait:[]},
   {id:'s8',d:4,t:'14:00',c:'c4',k:'Полевой игрок',cap:1,seats:[],wait:[]},
-  {id:'s9',d:4,t:'16:00',c:'c3',k:'Катание и техника',cap:3,seats:[],wait:[]},
+  {id:'s9',d:4,t:'16:00',c:'c3',k:'Полевой игрок',cap:3,seats:[],wait:[]},
 ];
 /* демо-окна ставим на ближайшие дни от сегодняшней даты */
 (function(){const off={s1:1,s2:1,s3:2,s4:2,s5:3,s6:4,s7:5,s8:6,s9:8};SLOTS.forEach(s=>{const d=addDays(TODAY_D,off[s.id]||1);s.date=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');s.d=(d.getDay()+6)%7})})();
@@ -425,6 +425,7 @@ const sDw=s=>DOW[sDow(s)],sDt=s=>fmt(slotDay(s)),sDowFull=s=>DOWFULL[sDow(s)];
 const DAYS7=[0,1,2,3,4,5,6].map(o=>{const d=addDays(TODAY_D,o);return [DOW[(d.getDay()+6)%7],fmt(d),(d.getDay()+6)%7]});
 const DAYS14=[...Array(14)].map((_,o)=>addDays(TODAY_D,o));
 const slotDate=s=>{let d=slotDay(s);const [h,m]=String(s.t).split(':').map(Number);d.setHours(h||0,m||0,0,0);return d};
+const kindOf=s=>(coachById(s.c)||{}).goalie?GK:FK;/* вид индивидуальной определяется тренером */
 const isPast=s=>slotDate(s)<=new Date();
 const canCancel=s=>slotDate(s)-new Date()>=24*3600e3;
 const seatsLeft=s=>Infinity;/* число участников индивидуальной не ограничено */
@@ -772,13 +773,13 @@ function pHome(){if(!ME)return '';const k=ME;
     else extra=`<div style="flex-basis:100%;display:flex;gap:8px;align-items:center"><span class="pill ok">Придёт</span><button class="btn ghost sm" data-a="absAsk" data-v="${e.dt}">Не сможет прийти</button></div>`;
     return evRow(e,{extra})}).join('');
   const feed=POSTS.filter(x=>x.g==='all'||x.g===k.g);
-  const invHtml=invs.map(s=>`<div class="card alert"><div class="t">Тренер ${esc(short((coachById(s.c)||{}).name))} приглашает на индивидуальную</div><div class="muted">${sDowFull(s)}, ${sDt(s)} в ${esc(s.t)} · ${esc(s.k)} · ${rub(curPrice(s))} с чел. · участников ${nSeats(s)}</div><div class="row" style="gap:6px"><button class="btn red grow" data-a="invYes" data-v="${s.id}">Приду</button><button class="btn ghost grow" data-a="invNo" data-v="${s.id}">Отказаться</button></div><div class="muted">Если откажетесь, тренировка не начислится.</div></div>`).join('');
+  const invHtml=invs.map(s=>`<div class="card alert"><div class="t">Тренер ${esc(short((coachById(s.c)||{}).name))} приглашает на индивидуальную</div><div class="muted">${sDowFull(s)}, ${sDt(s)} в ${esc(s.t)} · ${esc(kindOf(s))} · ${rub(curPrice(s))} с чел. · участников ${nSeats(s)}</div><div class="row" style="gap:6px"><button class="btn red grow" data-a="invYes" data-v="${s.id}">Приду</button><button class="btn ghost grow" data-a="invNo" data-v="${s.id}">Отказаться</button></div><div class="muted">Если откажетесь, тренировка не начислится.</div></div>`).join('');
   return `${kidHead(k)}${invHtml}${k.consent?'':`<div class="card alert"><div class="t">Нужно ваше согласие на обработку персональных данных</div><div class="muted">Без него школа не может хранить данные ребёнка в приложении.</div><button class="btn red" data-a="consentOpen">Прочитать и подтвердить</button></div>`}${alerts}${debtCard(k)}
   ${TOURS.filter(x=>x.g===k.g).map(x=>tourCard(x,k)).join('')}
   <h3>Тренировки на 7 дней</h3>
   <div class="card">${nextEv||'<div class="muted">В расписании группы пока нет тренировок.</div>'}<div class="muted">По умолчанию ребёнок отмечен как «Придёт». Если не сможет, нажмите кнопку — тренер увидит это заранее.</div></div>
   <h3>Индивидуальные</h3>
-  <div class="card">${mine.map(s=>`<div class="row"><div class="grow"><b>${sDw(s)}, ${sDt(s)} в ${esc(s.t)}</b><div class="muted">${esc(short((coachById(s.c)||{}).name))} · ${esc(s.k)} · ${rub(curPrice(s))} · участников ${nSeats(s)}</div></div><span class="pill ok">Записан</span></div>`).join('')}
+  <div class="card">${mine.map(s=>`<div class="row"><div class="grow"><b>${sDw(s)}, ${sDt(s)} в ${esc(s.t)}</b><div class="muted">${esc(short((coachById(s.c)||{}).name))} · ${esc(kindOf(s))} · ${rub(curPrice(s))} · участников ${nSeats(s)}</div></div><span class="pill ok">Записан</span></div>`).join('')}
   ${waits.map(s=>`<div class="row"><div class="grow"><b>${sDw(s)}, ${sDt(s)} в ${esc(s.t)}</b><div class="muted">${esc(short((coachById(s.c)||{}).name))}</div></div><span class="pill warn">Лист ожидания</span></div>`).join('')}
   ${!mine.length&&!waits.length?'<div class="muted">Записей нет.</div>':''}
   <button class="btn sm" data-a="goInd">${mine.length?'Записаться ещё':'Записаться на индивидуальные'}</button></div>
@@ -824,10 +825,8 @@ function slotForm(){const coachOnly=S.role==='coach';return `<form id="slForm" c
   <div class="grid2"><label class="field">Дата<select class="in" id="slD">${DAYS14.map((d,o)=>`<option value="${isoD(d)}">${o===0?'Сегодня':o===1?'Завтра':DOWFULL[(d.getDay()+6)%7]}, ${fmt(d)}</option>`).join('')}</select></label>
   <label class="field">Время<input type="time" id="slT" value="13:00" required></label></div>
   ${coachOnly?`<input type="hidden" id="slC" value="${S.coach}">`:`<label class="field">Тренер<select class="in" id="slC">${COACHES().map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select></label>`}
-  <div class="grid2"><label class="field">Вид<select class="in" id="slK">${KINDS.filter(k=>k!==GK||!coachOnly||(coachById(S.coach)||{}).goalie).map(k=>`<option>${k}</option>`).join('')}</select></label>
-</div>
+  <div class="muted">${coachOnly?`Вид тренировки: <b>${(coachById(S.coach)||{}).goalie?GK:FK}</b>.`:'Вид тренировки определяется тренером: у вратарского тренера — вратарская, у остальных — полевой игрок.'}</div>
   <div class="muted">Число участников не ограничено. Цена с человека считается по числу записавшихся: 1 — ${rub(IND_SEC[1])}, 2 — ${rub(IND_SEC[2])}, 3 — ${rub(IND_SEC[3])}, 4 — ${rub(IND_SEC[4])}, 5 — ${rub(IND_SEC[5])}, 6 и больше — ${rub(IND_SEC[6])}.</div>
-  <div class="muted">Индивидуальные проводит любой тренер, вратарские — только ${esc(COACHES().filter(c=>c.goalie).map(c=>short(c.name)).join(', ')||'отмеченный тренер')}.</div>
   <div class="row"><button class="btn red grow" type="submit">Добавить окно</button><button class="btn ghost" type="button" data-a="slCancel">Отмена</button></div></form>`}
 function schedule(){
   const seg=[['train','Тренировки'],['ind','Индивидуальные']];if(S.seg==='mass')S.seg='train';
@@ -857,7 +856,7 @@ function indSlots(){
         else if(mine)right=`<span class="pill ok">Вы записаны</span>`+(canCancel(s)?`<button class="btn ghost sm" data-a="unbook" data-v="${s.id}">Отменить</button>`:`<span class="muted" style="flex-basis:100%">Отмена без оплаты — не позднее чем за 24 часа. Сейчас отменить может только администратор.</span>`);
         else if(isPast(s)){cls='past';right=`<span class="pill">Тренировка прошла</span>`}
         else{const on=sel.includes(s.id);if(on){cls='sel';total+=joinPrice(s)}right=`<button class="btn ${on?'red':''} sm" data-a="pick" data-v="${s.id}" aria-pressed="${on}">${on?'Выбрано ✓':'Выбрать'}</button>`}
-        return `<div class="ev-i ${cls}" style="flex-wrap:wrap"><span class="time">${esc(s.t)}</span><div class="grow"><b>${esc(s.k)}</b><div class="muted">${slotLine(s,!mine)}</div></div><div class="row" style="gap:6px;flex-wrap:wrap;flex-basis:100%;justify-content:flex-end">${right}</div></div>`}).join('')}</div></div>`}).join('');
+        return `<div class="ev-i ${cls}" style="flex-wrap:wrap"><span class="time">${esc(s.t)}</span><div class="grow"><b>${esc(kindOf(s))}</b><div class="muted">${slotLine(s,!mine)}</div></div><div class="row" style="gap:6px;flex-wrap:wrap;flex-basis:100%;justify-content:flex-end">${right}</div></div>`}).join('')}</div></div>`}).join('');
     return `<div class="note">Отметьте одно или несколько окон и нажмите «Сохранить запись». Мест не ограничено: чем больше участников, тем дешевле каждому — от 2 500 ₽ за одного до 1 300 ₽ с человека, когда участников 6 и больше. Отменить без оплаты можно не позднее чем за 24 часа.</div>
     <div class="card" style="gap:14px">${html||'<div class="muted">Свободных окон пока нет.</div>'}</div>
     ${sel.length?`<div class="savebar"><div class="grow"><b>Выбрано: ${sel.length}</b><br><span class="num">${rub(total)}</span></div><button class="btn ghost sm" data-a="pickClear">Сбросить</button><button class="btn" data-a="bookSel">Сохранить запись</button></div>`:''}`}
@@ -866,7 +865,7 @@ function indSlots(){
     const kidLine=(id,n,sid)=>{const k=kidById(id);if(!k)return '';const ph=(k.parents[0]||{}).p||'';
       return `<li class="kl"><span class="kn">${n}.</span><div class="grow"><b>${esc(k.name)}</b><div class="muted">${esc(k.pos)} · группа ${esc(k.g)}${k.by&&k.by!==byOf(k.g)?' · '+esc(k.by)+' г.р.':''}${ph?` · <a href="tel:${esc(ph.replace(/[^\d+]/g,''))}" style="color:var(--blue)">${esc(ph)}</a>`:''}</div></div>${sid?`<span class="pill ${isInv(SLOTS.find(x=>x.id===sid)||{},id)?'warn':'ok'}" style="align-self:center">${isInv(SLOTS.find(x=>x.id===sid)||{},id)?'ждём ответа':'придёт'}</span><button class="btn ghost sm" data-a="unseat" data-v="${sid}|${id}" aria-label="Убрать из окна">✕</button>`:''}</li>`};
     const card=s=>{const seats=s.seats||[],wait=s.wait||[],left=seatsLeft(s),past=slotDate(s)<new Date();
-      return `<div class="card slotc${past?' past':''}"><div class="row" style="flex-wrap:wrap;gap:6px"><div class="grow"><div class="t">${sDowFull(s)}, ${sDt(s)} · ${esc(s.t)}</div><div class="muted">${esc(s.k)} · 60 мин · ${seats.length?rub(curPrice(s))+' с чел.':'цена от '+rub(IND_SEC[6])+' до '+rub(IND_SEC[1])}${past?' · прошло':''}</div></div>
+      return `<div class="card slotc${past?' past':''}"><div class="row" style="flex-wrap:wrap;gap:6px"><div class="grow"><div class="t">${sDowFull(s)}, ${sDt(s)} · ${esc(s.t)}</div><div class="muted">${esc(kindOf(s))} · 60 мин · ${seats.length?rub(curPrice(s))+' с чел.':'цена от '+rub(IND_SEC[6])+' до '+rub(IND_SEC[1])}${past?' · прошло':''}</div></div>
         <span class="pill ${seats.length?'ok':''}">${seats.length} ${seats.length%10===1&&seats.length%100!==11?'участник':seats.length%10>=2&&seats.length%10<=4&&(seats.length%100<10||seats.length%100>=20)?'участника':'участников'}</span></div>
         ${seats.length?`<ol class="klist">${seats.map((id,i)=>kidLine(id,i+1,s.id)).join('')}</ol>`:'<div class="muted">Пока никто не записался.</div>'}
         ${past?'':`<div class="row" style="gap:6px"><select class="in grow" id="addk_${s.id}" aria-label="Добавить хоккеиста"><option value="">Добавить хоккеиста…</option>${GROUPS().map(g=>{const ks=KIDS.filter(k=>k.g===g&&!seats.includes(k.id));return ks.length?`<optgroup label="Группа ${esc(g)}">${ks.map(k=>`<option value="${k.id}">${esc(k.name)}</option>`).join('')}</optgroup>`:''}).join('')}</select><button class="btn sm" data-a="coAddKid" data-v="${s.id}">Добавить</button></div>`}
@@ -879,7 +878,7 @@ function indSlots(){
   <div class="card" style="gap:14px">${DAYS14.map(dd=>{const dt=fmt(dd),dw=DOW[(dd.getDay()+6)%7],ss=SLOTS.filter(s=>isoD(slotDay(s))===isoD(dd)&&!isPast(s)).sort(SORT.slots);if(!ss.length)return '';
     return `<div class="day"><div class="date"><b>${dt.slice(0,2)}</b><span>${dw}</span></div><div class="ev">${ss.map(s=>{const ks=(s.seats||[]).map(kidById).filter(Boolean);
       const del=S.slDel===s.id?`<div style="flex-basis:100%;display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="danger">${ks.length?'Записи будут отменены, родителям придёт уведомление.':'Удалить окно?'}</span><button class="btn warnb sm" data-a="slDelYes" data-v="${s.id}">Удалить</button><button class="btn ghost sm" data-a="slDelNo">Нет</button></div>`:`<button class="btn ghost sm" data-a="slDel" data-v="${s.id}" aria-label="Удалить окно">✕</button>`;
-      return `<div class="ev-i" style="flex-wrap:wrap"><span class="time">${esc(s.t)}</span><div class="grow"><b>${esc(s.k)}</b><div class="muted">${slotLine(s)}</div>${ks.length?`<div class="row" style="gap:4px;flex-wrap:wrap;margin-top:4px">${ks.map(k=>`<span class="pill">${esc(short(k.name))} <button class="btn ghost sm" style="padding:0 6px;min-height:0" data-a="unseat" data-v="${s.id}|${k.id}" aria-label="Снять запись">✕</button></span>`).join('')}</div>`:''}</div><div class="row" style="gap:6px;flex-wrap:wrap;flex-basis:100%;justify-content:flex-end"><span class="pill ${nSeats(s)?'ok':''}">участников: ${nSeats(s)}</span>${S.slDel===s.id?'':del}</div>${S.slDel===s.id?del:''}</div>`}).join('')}</div></div>`}).join('')||'<div class="muted">Окон пока нет.</div>'}</div>`}
+      return `<div class="ev-i" style="flex-wrap:wrap"><span class="time">${esc(s.t)}</span><div class="grow"><b>${esc(kindOf(s))}</b><div class="muted">${slotLine(s)}</div>${ks.length?`<div class="row" style="gap:4px;flex-wrap:wrap;margin-top:4px">${ks.map(k=>`<span class="pill">${esc(short(k.name))} <button class="btn ghost sm" style="padding:0 6px;min-height:0" data-a="unseat" data-v="${s.id}|${k.id}" aria-label="Снять запись">✕</button></span>`).join('')}</div>`:''}</div><div class="row" style="gap:6px;flex-wrap:wrap;flex-basis:100%;justify-content:flex-end"><span class="pill ${nSeats(s)?'ok':''}">участников: ${nSeats(s)}</span>${S.slDel===s.id?'':del}</div>${S.slDel===s.id?del:''}</div>`}).join('')}</div></div>`}).join('')||'<div class="muted">Окон пока нет.</div>'}</div>`}
 
 /* ===================== ЧАТ ===================== */
 function chat(){
@@ -1221,8 +1220,8 @@ document.addEventListener('submit',async e=>{e.preventDefault();const f=e.target
     const txt=`${id?'изменено':'добавлено'}: ${TYPES[type]} ${DOWFULL[d].toLowerCase()} ${s}–${en}`;
     notify({aud:'parent',g,t:`Расписание ${g==='all'?'массовых катаний':'группы '+g} ${txt}`});if(g!=='all')notify({aud:'staff',roles:['coach'],g,t:`Расписание ${g} ${txt}`});
     addLog(`${g==='all'?'массовое катание':'группа '+g}: ${txt}`);S.evEdit=null;toast('Сохранено. Родители получили уведомление');break}
-  case 'slForm':{if(isPast({date:val('slD'),t:val('slT')})){toast('Это время уже прошло. Выберите день и время позже');render();return}const sc=S.role==='coach'?S.coach:val('slC');if(val('slK')===GK&&!(coachById(sc)||{}).goalie){const gs=COACHES().filter(c=>c.goalie).map(c=>short(c.name)).join(', ');toast('Вратарские тренировки проводит только '+(gs||'отмеченный тренер'));render();return}}
-    {const dd=new Date(val('slD')+'T00:00:00');SLOTS.push({id:uid('s'),date:val('slD'),d:(dd.getDay()+6)%7,t:val('slT'),c:S.role==='coach'?S.coach:val('slC'),k:val('slK'),cap:0,seats:[],wait:[]})}SLOTS.sort(SORT.slots);S.slEdit=false;toast('Окно добавлено, родители увидят его в записи');break;
+  case 'slForm':{if(isPast({date:val('slD'),t:val('slT')})){toast('Это время уже прошло. Выберите день и время позже');render();return}const sc=S.role==='coach'?S.coach:val('slC');if(false){const gs=COACHES().filter(c=>c.goalie).map(c=>short(c.name)).join(', ');toast('Вратарские тренировки проводит только '+(gs||'отмеченный тренер'));render();return}}
+    {const dd=new Date(val('slD')+'T00:00:00');SLOTS.push({id:uid('s'),date:val('slD'),d:(dd.getDay()+6)%7,t:val('slT'),c:S.role==='coach'?S.coach:val('slC'),k:(coachById(S.role==='coach'?S.coach:val('slC'))||{}).goalie?GK:FK,cap:0,seats:[],wait:[]})}SLOTS.sort(SORT.slots);S.slEdit=false;toast('Окно добавлено, родители увидят его в записи');break;
   case 'vForm':{const id=f.dataset.id,title=String(val('vTitle')).trim(),url=String(val('vUrl')).trim();if(!title)return;
     if(url&&!/^https?:\/\//i.test(url)){toast('Ссылка должна начинаться с https://');render();return}
     const tips=String(val('vText')).split('\n').map(x=>x.trim()).filter(Boolean);const v={id:id||uid('v'),ts:id?(VIDEOS.find(x=>x.id===id)||{}).ts:Date.now(),cat:val('vCat'),g:val('vG'),title,url,tips};
