@@ -160,11 +160,34 @@ nav.tabs .badge{position:absolute;top:4px;left:calc(50% + 6px);min-width:16px;he
     </div>
   </header>
   <main id="main"></main>
+  <main id="live" class="live" hidden></main>
 </div>
 <nav class="tabs"><div class="in" id="nav"></div></nav>
 
 <style>
 .bell{margin-left:auto;position:relative;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.35);color:#fff;border-radius:10px;width:38px;height:34px;display:grid;place-items:center;flex:none}
+.cam-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cam{position:relative;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:16/9;border:1px solid var(--line);min-width:0}
+.cam.big{border-radius:14px}
+.cam-v,.cam-v video,.cam-v iframe{position:absolute;inset:0;width:100%;height:100%}
+.cam-v video{object-fit:contain;border-radius:0;background:#000}
+.cam-v iframe{border:0}
+.cam-st{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding:24px 8px 8px;font-size:12px;color:#ddd;background:rgba(0,0,0,.55);z-index:2}
+.cam-bar{position:absolute;left:0;right:0;top:0;display:flex;gap:6px;align-items:center;padding:5px 6px 12px 8px;background:linear-gradient(rgba(0,0,0,.75),transparent);font-size:12px;font-weight:600;z-index:3;pointer-events:none;color:#fff}
+.cam-n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cam-btn{pointer-events:auto;border:0;background:rgba(0,0,0,.45);color:#fff;border-radius:8px;width:32px;height:28px;display:grid;place-items:center;flex:none}
+.cam-btn svg,.lc-ico{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cam-tap{position:absolute;inset:0;z-index:2;background:none;border:0}
+.cam:fullscreen{border:0;border-radius:0;aspect-ratio:auto;width:100%;height:100%}
+.live-dot{background:var(--alarm);color:#fff;border-radius:4px;padding:1px 5px;font-size:10px;font-weight:800;letter-spacing:.06em;flex:none}
+.cam-now{display:flex;gap:8px;align-items:center;font-size:14px;font-weight:600}
+.rec{width:10px;height:10px;border-radius:50%;background:var(--alarm);flex:none;box-shadow:0 0 0 3px rgba(255,79,110,.25)}
+.live-card{text-align:left;width:100%;color:inherit}
+.live-card .lc-ico{width:26px;height:26px;color:var(--gold);flex:none}
+.live-card.on{border-color:var(--gold);background:linear-gradient(135deg,rgba(245,199,26,.16),transparent 60%),var(--surface)}
+body.wide .app,body.wide nav.tabs .in{max-width:1100px}
+@media (min-width:1000px){body.wide .cam-grid.many{grid-template-columns:repeat(3,1fr)}}
+@media (prefers-reduced-motion:no-preference){.rec{animation:recb 1.6s ease-in-out infinite}@keyframes recb{50%{opacity:.35}}}
 .bell svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .bell .badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;font-size:11px;padding:0 5px}
 .who select{max-width:100%;min-width:0}
@@ -379,6 +402,7 @@ let META={
   cats:{list:[BK,INT]},
   abs:{map:{['k3|'+TODAY]:'болеет'}},
   counter:{rc:42},
+  cams:{list:[],access:'training',server:'',key:''},
 };
 let FILESLOCAL={};
 
@@ -551,6 +575,7 @@ const IC={home:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>',sched:'<rec
   chat:'<path d="M4 5h16v11H9l-5 4z"/>',media:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/>',
   profile:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
   groups:'<circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M2 20c1-3 3.5-5 6-5s5 2 6 5M14 15.5c1-.4 1.6-.5 2-.5 2.5 0 5 2 6 5"/>',
+  live:'<rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3z"/>',
   bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/>'};
 document.querySelector('.who').innerHTML=`<select id="role" aria-label="Роль"><option value="parent">Родитель</option><option value="coach">Тренер</option><option value="admin">Администратор</option><option value="director">Руководитель школы</option><option value="owner">Собственник</option></select><select id="ident" aria-label="Кто вы"></select><span class="scope" id="scope"></span><button class="bell" id="bell" data-a="notif" aria-label="Уведомления"></button><button class="btn ghost sm" id="logout" data-a="logout" hidden>Выйти</button>`;
 function tabs(){return S.role==='parent'?[['home','Главная'],['sched','Расписание'],['chat','Чат'],['media','Полезное'],['profile','Ребёнок']]
@@ -570,13 +595,15 @@ function header(){
   $('#nav').innerHTML=tabs().map(([id,l])=>`<button data-a="tab" data-v="${id}" ${S.tab===id?'aria-current="page"':''}><svg viewBox="0 0 24 24">${IC[id]}</svg>${l}${id==='chat'&&u?`<span class="badge">${u}</span>`:''}</button>`).join('')}
 function render(){
   if(LOGIN&&S.auth&&S.role==='parent'&&!kidById(S.auth.kid)){S.auth=null;lsSet('titan-auth',null)}
-  if(LOGIN&&!S.auth){header();$('#main').innerHTML=loginView();document.querySelectorAll('.sheet-bg').forEach(x=>x.remove());
+  if(LOGIN&&!S.auth){header();liveStop();document.body.classList.remove('wide');$('#live').hidden=true;$('#main').hidden=false;$('#main').innerHTML=loginView();document.querySelectorAll('.sheet-bg').forEach(x=>x.remove());
     if(S.toast){const t=document.createElement('div');t.className='toast';t.textContent=S.toast;document.body.appendChild(t);S.toast='';setTimeout(()=>t.remove(),2600)}saveLocal();return}
   fixMe();header();
+  const isLive=S.tab==='live';$('#main').hidden=isLive;$('#live').hidden=!isLive;document.body.classList.toggle('wide',isLive);
+  if(isLive)liveRender();else liveStop();
   const V={home:S.role==='parent'?pHome:sHome,sched:schedule,chat:chat,media:media,profile:pProfile,groups:sGroups,school:school}[S.tab]||(S.role==='parent'?pHome:sHome);
   $('#main').innerHTML=S.loading?'<div class="card"><div class="t">Загружаем данные школы…</div><div class="muted">Подключаемся к общей базе, это пару секунд.</div></div>'
     :(!KIDS.length&&S.role==='parent')?'<div class="card"><div class="t">Хоккеистов пока нет</div><div class="muted">Администратор или руководитель добавляют карточки в разделе «Группы».</div></div>'
-    :V();
+    :isLive?'':V();
   document.querySelectorAll('.sheet-bg').forEach(x=>x.remove());
   if(S.sheet)document.body.insertAdjacentHTML('beforeend',`<div class="sheet-bg" data-a="closeSheet" data-self="1"><div class="sheet" role="dialog" aria-modal="true">${sheet()}</div></div>`);
   if(S.toast){const t=document.createElement('div');t.className='toast';t.textContent=S.toast;document.body.appendChild(t);S.toast='';setTimeout(()=>t.remove(),2600)}
@@ -774,7 +801,7 @@ function pHome(){if(!ME)return '';const k=ME;
     return evRow(e,{extra})}).join('');
   const feed=POSTS.filter(x=>x.g==='all'||x.g===k.g);
   const invHtml=invs.map(s=>`<div class="card alert"><div class="t">Тренер ${esc(short((coachById(s.c)||{}).name))} приглашает на индивидуальную</div><div class="muted">${sDowFull(s)}, ${sDt(s)} в ${esc(s.t)} · ${esc(kindOf(s))} · ${rub(curPrice(s))} с чел. · участников ${nSeats(s)}</div><div class="row" style="gap:6px"><button class="btn red grow" data-a="invYes" data-v="${s.id}">Приду</button><button class="btn ghost grow" data-a="invNo" data-v="${s.id}">Отказаться</button></div><div class="muted">Если откажетесь, тренировка не начислится.</div></div>`).join('');
-  return `${kidHead(k)}${invHtml}${k.consent?'':`<div class="card alert"><div class="t">Нужно ваше согласие на обработку персональных данных</div><div class="muted">Без него школа не может хранить данные ребёнка в приложении.</div><button class="btn red" data-a="consentOpen">Прочитать и подтвердить</button></div>`}${alerts}${debtCard(k)}
+  return `${kidHead(k)}${liveCard()}${invHtml}${k.consent?'':`<div class="card alert"><div class="t">Нужно ваше согласие на обработку персональных данных</div><div class="muted">Без него школа не может хранить данные ребёнка в приложении.</div><button class="btn red" data-a="consentOpen">Прочитать и подтвердить</button></div>`}${alerts}${debtCard(k)}
   ${TOURS.filter(x=>x.g===k.g).map(x=>tourCard(x,k)).join('')}
   <h3>Тренировки на 7 дней</h3>
   <div class="card">${nextEv||'<div class="muted">В расписании группы пока нет тренировок.</div>'}<div class="muted">По умолчанию ребёнок отмечен как «Придёт». Если не сможет, нажмите кнопку — тренер увидит это заранее.</div></div>
@@ -975,6 +1002,7 @@ function sHome(){
   const debtors=canManage()?KIDS.filter(k=>k.debt>0):[];
   return `<h2>${DOWFULL[TIDX]}, ${TODAY_D.getDate()} ${MON_GEN[TODAY_D.getMonth()]}</h2>
   ${u?`<button class="card" style="text-align:left" data-a="tab" data-v="chat"><div class="row"><div class="grow"><div class="t">Новые сообщения от родителей</div><div class="muted">Ответьте в разделе «Чаты»</div></div><span class="badge">${u}</span></div></button>`:''}
+  ${liveCard()}
   ${canManage()?`<button class="card" style="text-align:left" data-a="tab" data-v="school"><div class="row"><div class="grow"><div class="t">Школа</div><div class="muted">${isTop()?'Журнал изменений, реквизиты, сотрудники, тренеры'+((META.log.list||[]).length?' · записей: '+META.log.list.length:''):'Группы, реквизиты (вносит руководитель)'}</div></div><span>›</span></div></button>`:''}
   ${canManage()?payReqBlock():''}
   ${absList.length?`<div class="card alert"><div class="t">Предупредили об отсутствии</div><div class="list">${absList.map(([k,dt,r])=>`<div class="item"><div class="grow">${esc(short(k.name))} · ${k.g}<div class="muted">${dt} · ${esc(r)}</div></div></div>`).join('')}</div></div>`:''}
@@ -1039,7 +1067,131 @@ function school(){const dir=isTop();
     ${COACHES().length<MAX_COACHES?`<div class="cedit"><div class="t">Новый тренер</div><input type="text" id="coNew" placeholder="ФИО"><div class="grid2"><input type="tel" id="coNewP" placeholder="Телефон"><input type="email" id="coNewE" placeholder="Электронная почта"></div><button class="btn ghost sm" data-a="coAdd">Добавить тренера</button></div>`:`<div class="note">Добавлено максимальное число тренеров: ${MAX_COACHES}.</div>`}
     <button class="btn red" data-a="coSave">Сохранить тренеров</button><div class="muted">Тренер видит только отмеченные группы. Помощника отметьте галочкой и назначьте ему ту же группу. Тренера с окнами для индивидуальных сначала освободите от окон.</div></div>`
     :`<div class="card"><div class="t">Тренеры</div><div class="list">${COACHES().map(c=>`<div class="item"><div class="grow"><div class="t">${esc(c.name)}${c.asst?' <span class="pill">помощник</span>':''}</div><div class="muted">${esc(c.phone||'телефон не указан')} · ${esc(c.email||'почта не указана')}</div><div class="muted">Группы: ${esc(c.groups.join(', ')||'—')}</div></div></div>`).join('')}</div><div class="muted">Назначает руководитель школы.</div></div>`;
-  return `<button class="back" data-a="tab" data-v="home">‹ Сегодня</button><h2>Школа</h2>${log}<h3>Реквизиты для оплаты</h3>${req}<h3>Сотрудники</h3>${staff}${groups}${coaches}`}
+  return `<button class="back" data-a="tab" data-v="home">‹ Сегодня</button><h2>Школа</h2>${log}<h3>Реквизиты для оплаты</h3>${req}<h3>Сотрудники</h3>${staff}${groups}${coaches}<h3 id="camH">Камеры арены</h3>${camSettings()}`}
+
+/* ===================== ТРАНСЛЯЦИИ С КАМЕР АРЕНЫ ===================== */
+/* Камеры подключаются через сервер трансляций (папка camproxy): он сам входит в Trassir и отдаёт приложению только видео.
+   Пароли Trassir в приложение не попадают. Можно добавить и любую ссылку на поток .m3u8 или страницу с плеером. */
+const CAMS=()=>META.cams||(META.cams={list:[],access:'training',server:'',key:''});
+const camList=()=>(CAMS().list||[]).filter(c=>c.on!==false&&c.url);
+const LIVE_PRE=10,LIVE_POST=10;/* трансляция для родителей открывается за 10 минут до льда и закрывается через 10 минут после */
+const ICE_TYPES=['ice','game'];
+const toMin=t=>{const [h,m]=String(t).split(':').map(Number);return (h||0)*60+(m||0)};
+const hhmm=m=>pad(Math.floor(((m%1440)+1440)%1440/60))+':'+pad(((m%60)+60)%60);
+function iceNow(groups){const n=new Date(),m=n.getHours()*60+n.getMinutes(),di=(n.getDay()+6)%7;
+  return EVENTS.filter(e=>e.d===di&&ICE_TYPES.includes(e.type)&&(!groups||groups.includes(e.g))&&toMin(e.s)-LIVE_PRE<=m&&m<=toMin(e.e)+LIVE_POST).sort(byTime)}
+function nextIce(g){const n=new Date(),m=n.getHours()*60+n.getMinutes();
+  for(let i=0;i<8;i++){const d=addDays(new Date(n.getFullYear(),n.getMonth(),n.getDate()),i),di=(d.getDay()+6)%7;
+    const e=EVENTS.filter(e=>e.d===di&&e.g===g&&ICE_TYPES.includes(e.type)&&(i>0||toMin(e.s)-LIVE_PRE>m)).sort(byTime)[0];
+    if(e)return {e,i,dw:DOW[di],dt:fmt(d)}}return null}
+function liveAccess(){
+  if(!camList().length)return {ok:false,why:'nocams'};
+  if(isStaff())return {ok:true};
+  const acc=CAMS().access||'training';
+  if(acc==='off'||!ME)return {ok:false,why:'off'};
+  if(acc==='always')return {ok:true};
+  return iceNow([ME.g]).length?{ok:true}:{ok:false,why:'wait',next:nextIce(ME.g)}}
+const okUrl=u=>/^https?:\/\/[^\s"'<>]+$/i.test(String(u||''));
+function camUrl(c,q){if(!c.srv)return c.url;const k=CAMS().key;return c.url+(c.url.includes('?')?'&':'?')+'q='+(q||'main')+(k?'&k='+encodeURIComponent(k):'')}
+
+/* плеер: на айфоне встроенный, в остальных браузерах hls.js (грузится только когда открыли трансляцию) */
+let HLSP=null;
+function loadHls(){if(window.Hls)return Promise.resolve(window.Hls);if(HLSP)return HLSP;
+  const urls=['https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.13/hls.min.js','https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js'];
+  HLSP=new Promise((res,rej)=>{const go=i=>{if(i>=urls.length){HLSP=null;rej(new Error('hls'));return}
+    const sc=document.createElement('script');sc.src=urls[i];sc.onload=()=>window.Hls?res(window.Hls):go(i+1);sc.onerror=()=>{sc.remove();go(i+1)};document.head.appendChild(sc)};go(0)});
+  return HLSP}
+function makePlayer(c,q){
+  const box=document.createElement('div');box.className='cam-v';
+  if(!c.srv&&!/\.m3u8(\?|#|$)/i.test(c.url)){/* страница с плеером, например публичная ссылка Trassir Cloud */
+    const f=document.createElement('iframe');f.src=c.url;f.allow='autoplay; fullscreen';f.allowFullscreen=true;f.referrerPolicy='no-referrer';f.title=c.name||'Камера';box.append(f);
+    return {box,stop(){f.src='about:blank'}}}
+  const v=document.createElement('video');v.muted=true;v.defaultMuted=true;v.autoplay=true;v.playsInline=true;v.setAttribute('playsinline','');v.setAttribute('muted','');
+  const st=document.createElement('div');st.className='cam-st';box.append(v,st);
+  let hls=null,timer=null,wd=null,dead=false;
+  const msg=(t,retry)=>{st.hidden=false;st.innerHTML=`<span>${esc(t)}</span>`+(retry?'<button class="btn sm ghost" type="button">Повторить</button>':'');const b=st.querySelector('button');if(b)b.onclick=start};
+  const fail=()=>{if(dead)return;clearTimeout(wd);msg('Камера сейчас не отвечает',true);clearTimeout(timer);timer=setTimeout(start,15000)};
+  v.addEventListener('playing',()=>{clearTimeout(wd);st.hidden=true});
+  v.addEventListener('error',()=>{if(!hls)fail()});
+  function start(){if(dead)return;clearTimeout(timer);clearTimeout(wd);if(hls){hls.destroy();hls=null}
+    msg('Подключаемся…');wd=setTimeout(fail,25000);const url=camUrl(c,q);
+    if(v.canPlayType('application/vnd.apple.mpegurl')){v.src=url;v.play().catch(()=>{});return}
+    loadHls().then(H=>{if(dead)return;if(!H.isSupported()){clearTimeout(wd);msg('Этот браузер не показывает трансляции. Откройте приложение в Safari или Chrome.');return}
+      hls=new H({liveSyncDurationCount:3,maxBufferLength:12,backBufferLength:6,manifestLoadingMaxRetry:3,levelLoadingMaxRetry:3,fragLoadingMaxRetry:3});
+      hls.on(H.Events.ERROR,(_,d)=>{if(d.fatal)fail()});hls.loadSource(url);hls.attachMedia(v);v.play().catch(()=>{})})
+      .catch(()=>{clearTimeout(wd);msg('Не удалось загрузить плеер. Проверьте интернет.',true)})}
+  start();
+  return {box,stop(){dead=true;clearTimeout(timer);clearTimeout(wd);if(hls)hls.destroy();hls=null;v.removeAttribute('src');try{v.load()}catch(e){}}}}
+
+let LIVESIG='',LIVEP=[];
+function liveStop(){LIVEP.forEach(p=>p.stop());LIVEP=[];LIVESIG='';const L=document.getElementById('live');if(L&&L.innerHTML)L.innerHTML=''}
+function liveRender(){
+  const L=$('#live'),acc=liveAccess(),cams=camList();
+  if(S.liveCam&&!cams.some(c=>c.id===S.liveCam))S.liveCam=null;
+  const mode=cams.length<2?'one':(S.liveMode||'grid'),cur=S.liveCam||(cams[0]||{}).id;
+  const now=iceNow(isStaff()?null:(ME?[ME.g]:[]));
+  const sig=JSON.stringify([S.role,acc,mode,cur,cams.map(c=>[c.id,c.name,c.url,c.srv]),CAMS().key,now.map(e=>e.id),document.hidden]);
+  if(sig===LIVESIG)return;
+  liveStop();LIVESIG=sig;
+  const back=`<button class="back" data-a="tab" data-v="home">‹ ${isStaff()?'Сегодня':'Главная'}</button><h2>Трансляция</h2>`;
+  const status=now.length?`<div class="cam-now"><span class="rec"></span><span>На льду: ${now.map(e=>esc(gl(e.g))+' · '+esc(evTime(e))).join('; ')}</span></div>`
+    :isStaff()?'<div class="muted">Сейчас по расписанию на льду никого нет.</div>':'';
+  if(!acc.ok){const n=acc.next;
+    const box=acc.why==='nocams'?(canManage()?`<div class="card"><div class="t">Камеры ещё не подключены</div><div class="muted">Добавьте камеры в разделе «Школа» → «Камеры арены».</div><button class="btn red" data-a="tab" data-v="school">Подключить камеры</button></div>`
+        :'<div class="card"><div class="t">Трансляции скоро появятся</div><div class="muted">Школа подключает камеры арены.</div></div>')
+      :acc.why==='off'?'<div class="card"><div class="t">Трансляции для родителей выключены</div><div class="muted">Школа включит их, когда всё будет готово.</div></div>'
+      :`<div class="card"><div class="t">Трансляция откроется во время тренировки</div>
+        <div class="muted">Смотреть можно, когда ваша группа на льду: за ${LIVE_PRE} минут до начала и до ${LIVE_POST} минут после конца. Так на экране только ваша группа.</div>
+        ${n?`<div class="ev-i"><span class="time">${esc(n.e.s)}</span><div class="grow"><b>${TYPES[n.e.type]||''}</b><div class="muted">${n.i===0?'Сегодня':n.dw+', '+n.dt} · ${esc(evTime(n.e))} · трансляция с ${hhmm(toMin(n.e.s)-LIVE_PRE)}</div></div></div>`:'<div class="muted">В расписании группы на этой неделе нет льда.</div>'}</div>`;
+    L.innerHTML=back+status+box;return}
+  const seg=cams.length>1?`<div class="seg" role="group" aria-label="Вид"><button data-a="liveMode" data-v="grid" aria-pressed="${mode==='grid'}">Все камеры</button><button data-a="liveMode" data-v="one" aria-pressed="${mode==='one'}">По одной</button></div>`:'';
+  const tile=(c,big)=>`<div class="cam${big?' big':''}" data-cam="${esc(c.id)}"><div class="cam-bar"><span class="live-dot">LIVE</span><span class="cam-n">${esc(c.name)}</span><button class="cam-btn" data-a="camFull" data-v="${esc(c.id)}" aria-label="На весь экран: ${esc(c.name)}"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div>${big?'':`<button class="cam-tap" data-a="camOne" data-v="${esc(c.id)}" aria-label="Открыть крупно: ${esc(c.name)}"></button>`}</div>`;
+  const body=mode==='grid'?`<div class="cam-grid${cams.length>4?' many':''}">${cams.map(c=>tile(c,false)).join('')}</div><div class="muted">Нажмите на камеру, чтобы открыть её крупно.</div>`
+    :`${cams.length>1?`<div class="chips">${cams.map(c=>`<button class="chip" data-a="camOne" data-v="${esc(c.id)}" aria-pressed="${c.id===cur}">${esc(c.name)}</button>`).join('')}</div>`:''}${tile(cams.find(c=>c.id===cur),true)}`;
+  L.innerHTML=back+status+seg+body+`<div class="note">Видео без звука и идёт с задержкой 10–20 секунд. Трансляция расходует мобильный интернет, закрывайте раздел, когда не смотрите.${mode==='grid'?' В сетке камеры показываются в облегчённом качестве.':''}</div>`;
+  if(document.hidden)return;
+  L.querySelectorAll('[data-cam]').forEach(t=>{const c=cams.find(x=>x.id===t.dataset.cam);if(!c)return;const p=makePlayer(c,mode==='grid'?'sub':'main');t.prepend(p.box);LIVEP.push(p)})}
+function camFull(id){const t=document.querySelector(`#live [data-cam="${CSS.escape(id)}"]`);if(!t)return;const v=t.querySelector('video');
+  if(document.fullscreenElement){document.exitFullscreen().catch(()=>{});return}
+  if(t.requestFullscreen)t.requestFullscreen().catch(()=>{v&&v.webkitEnterFullscreen&&v.webkitEnterFullscreen()});
+  else if(v&&v.webkitEnterFullscreen)v.webkitEnterFullscreen();
+  else if(t.webkitRequestFullscreen)t.webkitRequestFullscreen()}
+
+/* карточка на главной */
+function liveCard(){const cams=camList();if(!cams.length)return '';
+  const ico='<svg class="lc-ico" viewBox="0 0 24 24">'+IC.live+'</svg>';
+  if(isStaff()){const now=iceNow(null);return `<button class="card live-card" data-a="tab" data-v="live"><div class="row">${ico}<div class="grow"><div class="t">Камеры арены</div><div class="muted">${now.length?'На льду: '+now.map(e=>esc(gl(e.g))).join(', '):'Камер: '+cams.length+' · сейчас на льду никого'}</div></div>${now.length?'<span class="live-dot">LIVE</span>':''}</div></button>`}
+  const acc=liveAccess();if(acc.why==='off')return '';
+  const on=ME&&iceNow([ME.g]).length;
+  if(acc.ok)return `<button class="card live-card on" data-a="tab" data-v="live"><div class="row">${ico}<div class="grow"><div class="t">${on?'Идёт тренировка — смотреть':'Камеры арены — смотреть'}</div><div class="muted">${on?'Трансляция с камер ледовой арены':'Камер: '+cams.length}</div></div>${on?'<span class="live-dot">LIVE</span>':''}</div></button>`;
+  const n=acc.next;
+  return `<button class="card live-card" data-a="tab" data-v="live"><div class="row">${ico}<div class="grow"><div class="t">Трансляция тренировок</div><div class="muted">${n?`Откроется ${n.i===0?'сегодня':n.dw.toLowerCase()+', '+n.dt} в ${hhmm(toMin(n.e.s)-LIVE_PRE)}`:'Откроется, когда группа будет на льду'}</div></div></div></button>`}
+let LIVEACC='';
+setInterval(()=>{if(LOGIN&&!S.auth)return;if(S.tab==='live'){liveRender();return}
+  const k=JSON.stringify([liveAccess(),iceNow(null).map(e=>e.id)]);if(LIVEACC&&k!==LIVEACC&&S.tab==='home'&&!S.sheet)renderKeep();LIVEACC=k},30000);
+document.addEventListener('visibilitychange',()=>{if(S.tab==='live'&&(!LOGIN||S.auth))liveRender()});
+
+/* настройки камер (администрация) */
+function readCamDraft(){const d=S.camDraft;if(!d)return;const g=id=>document.getElementById(id);
+  if(g('camAcc'))d.access=g('camAcc').value;if(g('camSrv'))d.server=g('camSrv').value.trim().replace(/\/+$/,'');if(g('camKey'))d.key=g('camKey').value.trim();
+  d.list.forEach((c,i)=>{const n=g('camN'+i),o=g('camO'+i),u=g('camU'+i);if(n)c.name=n.value.trim()||c.name;if(o)c.on=o.checked;if(u&&!c.srv)c.url=u.value.trim()})}
+function camSettings(){const C=CAMS(),d=S.camDraft||(S.camDraft=JSON.parse(JSON.stringify({access:C.access||'training',server:C.server||'',key:C.key||'',list:C.list||[]})));
+  return `<div class="card form"><div class="t">Кто и когда смотрит</div>
+    <select class="in" id="camAcc" aria-label="Кто и когда смотрит">${[['training','Родители — только когда их группа на льду'],['always','Родители — в любое время'],['off','Только сотрудники школы']].map(([v,l])=>`<option value="${v}" ${d.access===v?'selected':''}>${l}</option>`).join('')}</select>
+    <div class="muted">«Когда группа на льду»: по расписанию, за ${LIVE_PRE} минут до начала тренировки или игры и до ${LIVE_POST} минут после конца. Сотрудники видят камеры всегда.</div></div>
+  <div class="card form"><div class="t">Сервер трансляций Trassir</div>
+    <label class="field">Адрес сервера<input type="url" id="camSrv" value="${esc(d.server)}" placeholder="https://cams.example.ru"></label>
+    <label class="field">Ключ доступа<input type="text" id="camKey" value="${esc(d.key)}" placeholder="VIEW_KEY из настроек сервера" autocomplete="off"></label>
+    <button class="btn ghost" data-a="camLoad">Загрузить камеры с сервера</button>
+    <div class="muted">Сервер сам входит в Trassir и отдаёт приложению только видео. Логин и пароль Trassir в приложение не попадают.</div></div>
+  <div class="card form"><div class="row"><div class="t grow">Камеры</div><span class="pill">${d.list.filter(c=>c.on!==false).length} показываются</span></div>
+    ${d.list.map((c,i)=>`<div class="cedit"><label class="field">Название для родителей<input type="text" id="camN${i}" value="${esc(c.name)}"></label>
+      ${c.srv?`<div class="muted">С сервера Trassir · канал ${esc(c.ch||c.id)}</div>`:`<label class="field">Ссылка<input type="url" id="camU${i}" value="${esc(c.url)}"></label>`}
+      <div class="row"><label class="row grow" style="gap:6px;font-size:14px"><input type="checkbox" id="camO${i}" ${c.on!==false?'checked':''}> показывать</label>
+      <button class="btn ghost sm" data-a="camUp" data-v="${i}" ${i?'':'disabled'} aria-label="Выше">↑</button><button class="btn ghost sm" data-a="camDel" data-v="${i}">Убрать</button></div></div>`).join('')||'<div class="muted">Камер пока нет. Загрузите их с сервера или добавьте ссылку вручную.</div>'}
+    <div class="cedit"><div class="t">Добавить по ссылке</div><input type="text" id="camNewN" placeholder="Название, например «Лёд, общий план»"><input type="url" id="camNewU" placeholder="https://…/stream.m3u8 или ссылка на плеер">
+      <button class="btn ghost sm" data-a="camAdd">Добавить камеру</button><div class="muted">Подходит прямая ссылка на поток .m3u8 или страница с плеером, например публичная ссылка на камеру из Trassir Cloud.</div></div>
+    <button class="btn red" data-a="camSave">Сохранить камеры</button></div>`}
 
 /* ===================== ДЕЙСТВИЯ ===================== */
 function copy(text,ok){const fail=()=>{S.sheet='copy';S.copyText=text;render()};
@@ -1062,7 +1214,7 @@ document.addEventListener('click',async e=>{
   const a=b.dataset.a,v=b.dataset.v;
   if(b.tagName==='A')return;
   switch(a){
-  case 'tab':S.tab=v;S.thread=null;S.kid=null;S.draft=null;S.editSizes=false;S.editMed=false;S.evEdit=null;S.slEdit=false;S.vEdit=null;S.postType=null;S.catEdit=false;break;
+  case 'tab':S.tab=v;S.camDraft=null;S.thread=null;S.kid=null;S.draft=null;S.editSizes=false;S.editMed=false;S.evEdit=null;S.slEdit=false;S.vEdit=null;S.postType=null;S.catEdit=false;break;
   case 'notif':S.sheet='notif';break;
   case 'closeSheet':S.sheet=null;break;
   case 'seg':S.seg=v;S.evEdit=null;S.evDel=null;S.slEdit=false;break;
@@ -1167,6 +1319,25 @@ document.addEventListener('click',async e=>{
   case 'coAdd':{const n=$('#coNew').value.trim();if(!n){toast('Введите ФИО тренера');break}if(COACHES().length>=MAX_COACHES){toast('Не больше '+MAX_COACHES+' тренеров');break}const ph=$('#coNewP').value.trim(),em=$('#coNewE').value.trim();if(em&&!/^\S+@\S+\.\S+$/.test(em)){toast('Проверьте электронную почту');break}readCoaches();META.coaches.list=[...META.coaches.list,{id:uid('c'),name:n,phone:ph,email:em,groups:[]}];toast('Тренер добавлен. Отметьте его группы');break}
   case 'coDel':{readCoaches();META.coaches.list=META.coaches.list.filter((_,i)=>i!==+v);break}
   case 'coSave':readCoaches();toast('Тренеры сохранены');break;
+  case 'liveMode':S.liveMode=v;break;
+  case 'camOne':S.liveMode='one';S.liveCam=v;scrollMain(0);$('#live').scrollTop=0;break;
+  case 'camFull':camFull(v);return;
+  case 'camAdd':{readCamDraft();const n=$('#camNewN').value.trim(),u=$('#camNewU').value.trim();
+    if(!okUrl(u)){toast('Вставьте ссылку, которая начинается с https://');break}
+    S.camDraft.list.push({id:uid('cam'),name:n||'Камера '+(S.camDraft.list.length+1),url:u,on:true});toast('Камера добавлена. Не забудьте сохранить');break}
+  case 'camDel':readCamDraft();S.camDraft.list.splice(+v,1);break;
+  case 'camUp':{readCamDraft();const i=+v,l=S.camDraft.list;if(i>0)[l[i-1],l[i]]=[l[i],l[i-1]];break}
+  case 'camLoad':{readCamDraft();const d=S.camDraft;if(!okUrl(d.server)){toast('Введите адрес сервера, например https://cams.example.ru');break}
+    toast('Подключаемся к серверу…');render();
+    try{const r=await fetch(d.server+'/api/cams'+(d.key?'?k='+encodeURIComponent(d.key):''),{cache:'no-store'});
+      if(r.status===401||r.status===403){toast('Сервер не принял ключ доступа');render();return}
+      const j=await r.json();const got=(j.cams||[]).filter(c=>c&&c.id);let added=0;
+      got.forEach(c=>{const url=d.server+'/live/'+encodeURIComponent(c.id)+'/index.m3u8';const ex=d.list.find(x=>x.srv&&x.ch===c.id);
+        if(ex)ex.url=url;else{d.list.push({id:uid('cam'),ch:c.id,srv:true,name:c.name||'Камера',url,on:true});added++}});
+      toast(got.length?`Камер на сервере: ${got.length}, новых: ${added}. Проверьте названия и сохраните`:'Сервер ответил, но камер не нашёл')}
+    catch(err){toast('Сервер не ответил. Проверьте адрес и что сервер включён')}break}
+  case 'camSave':{readCamDraft();const d=S.camDraft;if(d.list.some(c=>!okUrl(c.url))){toast('У одной из камер неверная ссылка');break}
+    META.cams={access:d.access,server:d.server,key:d.key,list:d.list};S.camDraft=null;addLog('изменены настройки камер арены');toast('Камеры сохранены');break}
   case 'reset':resetDemo();return;
   case 'consentOpen':S.sheet='consent';break;
   case 'consentGive':{if(!$('#consentChk')||!$('#consentChk').checked){toast('Поставьте галочку, чтобы подтвердить согласие');break}
